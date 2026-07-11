@@ -156,9 +156,9 @@ asst::AutoRecruitTask& asst::AutoRecruitTask::set_first_tags(std::vector<std::st
     return *this;
 }
 
-asst::AutoRecruitTask& asst::AutoRecruitTask::set_skip_robot(bool skip_robot) noexcept
+asst::AutoRecruitTask& asst::AutoRecruitTask::set_preserve_tags(std::vector<RecruitConfig::TagId> skip_tags) noexcept
 {
-    m_skip_robot = skip_robot;
+    m_preserve_tags = std::move(skip_tags);
     return *this;
 }
 
@@ -229,9 +229,7 @@ bool asst::AutoRecruitTask::_run()
 
     bool try_use_expedited = m_use_expedited;
 
-    // m_cur_times means how many times has the confirm button been pressed, NOT expedited plans
-    // used
-    while (m_cur_times != m_max_times) {
+    while (m_cur_times < m_max_times) {
         auto start_rect = try_get_start_button(ctrler()->get_image());
         if (start_rect) {
             if (need_exit()) {
@@ -240,10 +238,14 @@ bool asst::AutoRecruitTask::_run()
             if (m_slot_fail >= slot_retry_limit) {
                 return false;
             }
-            if (recruit_one(start_rect.value())) {
+            auto result = recruit_one(start_rect.value());
+            // confirmed: real recruitment done, advance m_cur_times
+            // skipped:   slot marked in m_force_skipped, try next slot without changing counters
+            // failed:    recognition error / no permit / etc., bump m_slot_fail for retry limiting
+            if (result == recruit_result::confirmed) {
                 ++m_cur_times;
             }
-            else {
+            else if (result == recruit_result::failed) {
                 ++m_slot_fail;
             }
             if (!m_has_permit && (!m_force_refresh || !m_has_refresh)) {
@@ -319,12 +321,14 @@ std::optional<asst::Rect> asst::AutoRecruitTask::try_get_start_button(const cv::
     return iter->rect;
 }
 
-/// open a pending recruit slot, set timer and tags then confirm, or leave the slot doing nothing
-/// return false if:
-/// - recognition failed
-/// - timer or tags corrupted
-/// - failed to confirm
-bool asst::AutoRecruitTask::recruit_one(const Rect& button)
+/// Open a pending recruit slot, analyze tags, set timer and tags, then confirm or skip.
+/// Returns:
+/// - confirmed: RecruitConfirm was executed successfully
+/// - skipped:   slot intentionally skipped (special/robot tag, level-based force skip, or
+///              no recruit permit); slot is added to m_force_skipped so the loop tries the
+///              next slot without changing any counters
+/// - failed:    recognition error, timer mismatch, confirm failure, or exit requested
+asst::AutoRecruitTask::recruit_result asst::AutoRecruitTask::recruit_one(const Rect& button)
 {
     LogTraceFunction;
 
@@ -337,7 +341,6 @@ bool asst::AutoRecruitTask::recruit_one(const Rect& button)
     sleep(delay);
 
     if (!calc_result.success) {
-        // recognition failed, perhaps opening the slot again would not help
         {
             json::value info = basic_info();
             info["what"] = "RecruitError";
@@ -347,26 +350,23 @@ bool asst::AutoRecruitTask::recruit_one(const Rect& button)
         if (!ProcessTask(*this, { "RecruitContinue", "Return" }).run()) {
             m_force_skipped.emplace(slot_index_from_rect(button));
         }
-        return false;
+        return recruit_result::failed;
     }
 
-    if (calc_result.for_special_tags_skip || calc_result.for_robot_tags_skip) {
-        // Mark the slot as completed and return
-        // without incrementing the count
+    if (calc_result.for_special_tags_skip || calc_result.for_preserved_tags_skip) {
         m_force_skipped.emplace(slot_index_from_rect(button));
         click_return_button();
-        return true;
+        return recruit_result::skipped;
     }
 
     if (calc_result.force_skip) {
-        // mark the slot as completed and return
         m_force_skipped.emplace(slot_index_from_rect(button));
         click_return_button();
-        return true;
+        return recruit_result::skipped;
     }
 
     if (need_exit()) {
-        return false;
+        return recruit_result::failed;
     }
 
     if (m_set_time && !check_timer(calc_result.recruitment_time)) {
@@ -376,22 +376,22 @@ bool asst::AutoRecruitTask::recruit_one(const Rect& button)
         // return and try later
         Log.info("Timer of this slot has not been reduced as expected.");
         click_return_button();
-        return false;
+        return recruit_result::failed;
     }
 
     // TODO: count blue pixels and compare with number of selected tags desired
 
     if (need_exit()) {
-        return false;
+        return recruit_result::failed;
     }
 
     if (!confirm()) {
         Log.info("Failed to confirm current recruit config.");
         click_return_button();
-        return false;
+        return recruit_result::failed;
     }
 
-    return true;
+    return recruit_result::confirmed;
 }
 
 // set recruit timer and tags only
@@ -455,8 +455,9 @@ asst::AutoRecruitTask::calc_task_result_type asst::AutoRecruitTask::recruit_calc
         std::ranges::transform(tags, std::back_inserter(tag_ids), std::mem_fn(&TextRect::text));
 
         bool has_special_tag = false;
-        bool has_robot_tag = false;
+        bool has_skip_tag = false;
         bool has_preferred_tag = false;
+        std::optional<RecruitConfig::TagId> preserved_tag;
 
         json::value info = basic_info();
         info["details"]["tags"] = json::array(get_tag_names(tag_ids));
@@ -473,20 +474,30 @@ asst::AutoRecruitTask::calc_task_result_type asst::AutoRecruitTask::recruit_calc
         if (auto special_iter = std::ranges::find_first_of(SpecialTags, tag_ids); special_iter != SpecialTags.cend())
             [[unlikely]] {
             has_special_tag = true;
-            json::value cb_info = info;
-            cb_info["what"] = "RecruitSpecialTag";
-            cb_info["details"]["tag"] = RecruitData.get_tag_name(*special_iter);
-            callback(AsstMsg::SubTaskExtraInfo, cb_info);
+            if (std::ranges::find(m_preserve_tags, *special_iter) != m_preserve_tags.cend()) {
+                has_skip_tag = true;
+                preserved_tag = *special_iter;
+            }
+            else {
+                json::value cb_info = info;
+                cb_info["what"] = "RecruitSpecialTag";
+                cb_info["details"]["tag"] = RecruitData.get_tag_name(*special_iter);
+                callback(AsstMsg::SubTaskExtraInfo, cb_info);
+            }
         }
 
-        // robot tags
-        const std::vector<RecruitConfig::TagId> RobotTags = { "支援机械", "元素" };
-        if (auto robot_iter = std::ranges::find_first_of(RobotTags, tag_ids); robot_iter != RobotTags.cend())
-            [[unlikely]] {
-            has_robot_tag = true;
+        if (!has_skip_tag && !m_preserve_tags.empty()) {
+            if (auto skip_iter = std::ranges::find_first_of(tag_ids, m_preserve_tags); skip_iter != tag_ids.cend())
+                [[unlikely]] {
+                has_skip_tag = true;
+                preserved_tag = *skip_iter;
+            }
+        }
+
+        if (preserved_tag.has_value()) [[unlikely]] {
             json::value cb_info = info;
-            cb_info["what"] = "RecruitSpecialTag";
-            cb_info["details"]["tag"] = RecruitData.get_tag_name(*robot_iter);
+            cb_info["what"] = "RecruitPreservedTag";
+            cb_info["details"]["tag"] = RecruitData.get_tag_name(preserved_tag.value());
             callback(AsstMsg::SubTaskExtraInfo, cb_info);
         }
 
@@ -615,7 +626,7 @@ asst::AutoRecruitTask::calc_task_result_type asst::AutoRecruitTask::recruit_calc
         // clang-format off
         if (m_need_refresh && m_has_refresh &&  // 基础条件
             !has_special_tag &&                 // 5 星以上 tag 不刷新
-            !(m_skip_robot && has_robot_tag) && // 手动确认 bot tag 不刷新
+            !has_skip_tag &&                    // 保留词条时不刷新
             final_combination.min_level == 3)   // 如果只有 3 星 tag，即使有倾向 tag 也应该刷新
         // clang-format on
         {
@@ -675,7 +686,7 @@ asst::AutoRecruitTask::calc_task_result_type asst::AutoRecruitTask::recruit_calc
         }
 
         if (!is_calc_only_task()) {
-            if (!(has_robot_tag || has_special_tag)) {
+            if (!(has_skip_tag || has_special_tag)) {
                 // do not confirm 3 star, force skip
                 if (!is_confirm_level_valid(3) && final_combination.min_level == 3 &&
                     !is_select_level_valid(final_combination.min_level)) {
@@ -695,8 +706,8 @@ asst::AutoRecruitTask::calc_task_result_type asst::AutoRecruitTask::recruit_calc
                 return result;
             }
 
-            if (has_robot_tag && m_skip_robot) {
-                calc_task_result_type result(calc_task_result::robot_tag_skip);
+            if (has_skip_tag) {
+                calc_task_result_type result(calc_task_result::preserved_tag_skip);
                 return result;
             }
         }

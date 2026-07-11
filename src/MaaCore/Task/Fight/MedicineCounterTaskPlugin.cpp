@@ -35,9 +35,9 @@ bool asst::MedicineCounterTaskPlugin::_run()
 {
     LogTraceFunction;
 
-    if (m_used_count >= m_max_count && !m_use_expiring) {
-        LogTrace << __FUNCTION__ << "Needn't to use medicines"
-                 << ",used:" << m_used_count << ",max:" << m_max_count << "use_expiring:" << m_use_expiring;
+    if (m_used_count >= m_max_count && m_expire_days == 0) {
+        LogTrace << __FUNCTION__ << "Needn't to use medicines, used:" << m_used_count << ", max:" << m_max_count
+                 << ", expire_days:" << m_expire_days;
         return true;
     }
 
@@ -82,10 +82,11 @@ bool asst::MedicineCounterTaskPlugin::_run()
             return false;
         }
     }
-    else if (m_used_count >= m_max_count && m_use_expiring) {
+    else if (m_used_count >= m_max_count && m_expire_days > 0) {
         bool changed = false;
-        for (const auto& [use, inventory, rect, is_expiring] : using_medicine->medicines | std::views::reverse) {
-            if (use > 0 && is_expiring != ExpiringStatus::Expiring) {
+        for (const auto& [use, inventory, expire_days, rect] : using_medicine->medicines | std::views::reverse) {
+            // 去掉超过了设置天数的药品
+            if (use > 0 && expire_days != -1 && expire_days > m_expire_days) {
                 ctrler()->click(rect);
                 sleep(Config.get_options().task_delay);
                 changed = true;
@@ -109,10 +110,10 @@ bool asst::MedicineCounterTaskPlugin::_run()
     };
 
     if (!analyze_sanity()) [[unlikely]] {
-        Log.error(__FUNCTION__, "unable to analyze sanity");
+        LogError << __FUNCTION__ << "unable to analyze sanity";
     }
     else if (*sanity_target >= *sanity_max) [[unlikely]] {
-        Log.info(__FUNCTION__, "sanity target >= sanity max, reduce count");
+        LogInfo << __FUNCTION__ << "sanity target >= sanity max, reduce count";
         if (m_dr_grandet) { // 博朗台: 如果溢出则等待
             auto waitTime = DrGrandetTaskPlugin::analyze_time_left(image);
             if (waitTime > 0) {
@@ -124,7 +125,7 @@ bool asst::MedicineCounterTaskPlugin::_run()
             while (!need_exit() && *sanity_target >= *sanity_max) {
                 reduce_excess(*using_medicine, 1);
                 if (++procedure > 20) {
-                    Log.error(__FUNCTION__, "reduce procedure exceed 20 times, break");
+                    LogError << __FUNCTION__ << "reduce procedure exceed 20 times, break";
                     return false;
                 }
                 else if (!refresh_medicine_count() || !analyze_sanity() || using_medicine->using_count <= 0) {
@@ -146,10 +147,17 @@ bool asst::MedicineCounterTaskPlugin::_run()
     }
 
     if (m_used_count + using_medicine->using_count > m_max_count) {
-        if (m_use_expiring) {
+        if (m_expire_days > 0) {
             bool has_non_expiring = false;
-            for (const auto& [use, _, __, is_expiring] : using_medicine->medicines) {
-                if (use > 0 && is_expiring != ExpiringStatus::Expiring) {
+            for (const auto& [use, _, expire_days, __] : using_medicine->medicines) {
+                if (use > 0 && expire_days == -1) {
+                    LogError << __FUNCTION__
+                             << "There are non-expiring medicines, and total count exceed max, need to reduce expire "
+                                "medicines first";
+                    has_non_expiring = true;
+                    break;
+                }
+                if (use > 0 && expire_days != -1 && expire_days > m_expire_days) {
                     has_non_expiring = true;
                     break;
                 }
@@ -167,7 +175,7 @@ bool asst::MedicineCounterTaskPlugin::_run()
     }
 
     if (!ProcessTask(*this, { "MedicineConfirm" }).set_retry_times(5).run()) {
-        Log.error(__FUNCTION__, "unable to run medicine confirm");
+        LogError << __FUNCTION__ << "unable to run medicine confirm";
         return false;
     }
 
@@ -180,6 +188,16 @@ bool asst::MedicineCounterTaskPlugin::_run()
     auto info = basic_info_with_what("UseMedicine");
     info["details"]["is_expiring"] = m_used_count > m_max_count;
     info["details"]["count"] = using_medicine->using_count;
+    for (const auto& [use, inventory, expire_days, _] : using_medicine->medicines) {
+        if (use > 0) {
+            info["details"]["medicines"].emplace(
+                json::value {
+                    { "use", use },
+                    { "inventory", inventory },
+                    { "expire_days", expire_days },
+                });
+        }
+    }
     callback(AsstMsg::SubTaskExtraInfo, info);
     return true;
 }
@@ -191,7 +209,7 @@ std::optional<asst::MedicineCounterTaskPlugin::MedicineResult>
     MultiMatcher multi_matcher(image);
     multi_matcher.set_task_info("MedicineReduceIcon");
     if (!multi_matcher.analyze()) {
-        Log.error(__FUNCTION__, "medicine reduce icon analyze failed");
+        LogError << __FUNCTION__ << "medicine reduce icon analyze failed";
         return std::nullopt;
     }
 
@@ -211,7 +229,7 @@ std::optional<asst::MedicineCounterTaskPlugin::MedicineResult>
         using_count_ocr.set_task_info(using_count_task);
         using_count_ocr.set_roi(using_rect);
         if (!using_count_ocr.analyze()) {
-            Log.error(__FUNCTION__, "medicine using count analyze failed");
+            LogError << __FUNCTION__ << "medicine using count analyze failed";
             return std::nullopt;
         }
 
@@ -219,21 +237,22 @@ std::optional<asst::MedicineCounterTaskPlugin::MedicineResult>
         inventory_ocr.set_task_info(inventory_task);
         inventory_ocr.set_roi(inventory_rect);
         if (!inventory_ocr.analyze()) {
-            Log.error(__FUNCTION__, "medicine inventory count analyze failed");
+            LogError << __FUNCTION__ << "medicine inventory count analyze failed";
             return std::nullopt;
         }
 
         // 仅在已使用>=上限时才进行过期判断，否则下次再检查，理智不够会进第二次的
-        auto is_expiring = ExpiringStatus::Unknown;
+        int day = -1;
         if (m_used_count >= m_max_count) {
             RegionOCRer expiring_ocr(image);
             expiring_ocr.set_task_info(expiring_task);
             expiring_ocr.set_roi(expiring_rect);
-            if (expiring_ocr.analyze()) {
-                is_expiring = ExpiringStatus::Expiring;
+            if (!expiring_ocr.analyze()) {
+                LogError << __FUNCTION__ << "medicine expire day analyze failed";
             }
-            else {
-                is_expiring = ExpiringStatus::NotExpiring;
+            else if (!utils::chars_to_number(expiring_ocr.get_result().text, day)) {
+                LogError << __FUNCTION__ << "unable to convert expire day to int,"
+                         << "text:" << expiring_ocr.get_result().text;
             }
         }
 
@@ -249,19 +268,19 @@ std::optional<asst::MedicineCounterTaskPlugin::MedicineResult>
         medicines.emplace_back(
             Medicine { .use = using_count,
                        .inventory = inventory_count,
-                       .reduce_button_position = result.rect,
-                       .is_expiring = is_expiring });
-        LogTrace << __FUNCTION__ << "medicine using count:" << using_count << ","
-                 << "inventory count:" << inventory_count << ","
-                 << "is expiring:" << expiring_status_to_string(is_expiring);
+                       .expire_days = day != -1 ? (day + 1) : -1, // 向上取整补足完整天数
+                       .reduce_button_pos = result.rect });
+        LogTrace << __FUNCTION__ << "medicine using count:" << using_count << ", inventory count:" << inventory_count
+                 << ", expire days:" << day;
     }
     return MedicineResult { .using_count = use, .medicines = medicines };
 }
 
 void asst::MedicineCounterTaskPlugin::reduce_excess(const MedicineResult& using_medicine, int reduce)
 {
-    Log.info(__FUNCTION__, "reduce excess medicine count, current:", using_medicine.using_count, ", reduce:", reduce);
-    for (const auto& [use, inventory, rect, is_expiring] : using_medicine.medicines | std::views::reverse) {
+    LogInfo << __FUNCTION__ << "reduce excess medicine count, current:" << using_medicine.using_count
+            << ", reduce:" << reduce;
+    for (const auto& [use, inventory, _, rect] : using_medicine.medicines | std::views::reverse) {
         ctrler()->click(rect);
         sleep(Config.get_options().task_delay);
         reduce -= use;
@@ -276,7 +295,7 @@ void asst::MedicineCounterTaskPlugin::reduce_excess(const MedicineResult& using_
             break;
         }
         else if (reduce < 0) {
-            Log.error(__FUNCTION__, "reduce count is less than 0");
+            LogError << __FUNCTION__ << "reduce count is less than 0";
             break;
         }
     }
@@ -297,13 +316,13 @@ std::optional<int> asst::MedicineCounterTaskPlugin::get_target_of_sanity(const c
     ocr.set_task_info(ocr_task);
     ocr.set_replace(merged_replace);
     if (!ocr.analyze()) [[unlikely]] {
-        Log.error(__FUNCTION__, "unable to ocr");
+        LogError << __FUNCTION__ << "unable to ocr";
         return std::nullopt;
     }
     int num = 0;
     if (!utils::chars_to_number(ocr.get_result().text, num)) {
-        Log.error(__FUNCTION__, "unable to change [", ocr.get_result().text, "] into int");
-        return false;
+        LogError << __FUNCTION__ << "unable to change [" << ocr.get_result().text << "] into int";
+        return std::nullopt;
     }
     return num;
 }
@@ -320,13 +339,13 @@ std::optional<int> asst::MedicineCounterTaskPlugin::get_maximun_of_sanity(const 
     ocr.set_task_info(ocr_task);
     ocr.set_replace(merge_map);
     if (!ocr.analyze()) [[unlikely]] {
-        Log.error(__FUNCTION__, "unable to ocr");
+        LogError << __FUNCTION__ << "unable to ocr";
         return std::nullopt;
     }
     int num = 0;
     if (!utils::chars_to_number(ocr.get_result().text, num)) {
-        Log.error(__FUNCTION__, "unable to change [", ocr.get_result().text, "] into int");
-        return false;
+        LogError << __FUNCTION__ << "unable to change [" << ocr.get_result().text << "] into int";
+        return std::nullopt;
     }
     return num;
 }

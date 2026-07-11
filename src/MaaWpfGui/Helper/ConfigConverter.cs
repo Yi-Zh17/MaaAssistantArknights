@@ -79,7 +79,7 @@ public class ConfigConverter
             ConfigurationKeys.VersionUpdateDoNotShowUpdate, ConfigurationKeys.CustomInfrastEnabled, ConfigurationKeys.CustomInfrastPlanShowInFightSettings,
         ];
 
-        foreach (var name in ConfigFactory.ConfigList.ToList())
+        foreach (var name in ConfigFactory.ConfigKeys.ToList())
         {
             ConfigFactory.DeleteConfiguration(name);
         }
@@ -200,7 +200,7 @@ public class ConfigConverter
                 infrastTask.SendClue = ConfigurationHelper.GetValue(ConfigurationKeys.InfrastReceptionSendClue, true);
                 infrastTask.ContinueTraining = ConfigurationHelper.GetValue(ConfigurationKeys.ContinueTraining, false);
                 infrastTask.DormThreshold = ConfigurationHelper.GetValue(ConfigurationKeys.DormThreshold, 30);
-                infrastTask.DormFilterNotStationed = Convert.ToBoolean(ConfigurationHelper.GetValue(ConfigurationKeys.DormFilterNotStationedEnabled, true));
+                infrastTask.DormFilterNotStationed = ConfigurationHelper.GetValue(ConfigurationKeys.DormFilterNotStationedEnabled, true);
                 infrastTask.DormTrustEnabled = ConfigurationHelper.GetValue(ConfigurationKeys.DormTrustEnabled, false);
                 infrastTask.OriginiumShardAutoReplenishment = ConfigurationHelper.GetValue(ConfigurationKeys.OriginiumShardAutoReplenishment, true);
                 infrastTask.Filename = ConfigurationHelper.GetValue(ConfigurationKeys.CustomInfrastFile, string.Empty);
@@ -274,17 +274,22 @@ public class ConfigConverter
                 infrastTask.RoomList = roomList;
 
                 recruitTask.ExtraTagMode = ConfigurationHelper.GetValue(ConfigurationKeys.SelectExtraTags, 0);
-                recruitTask.Level3PreferTags = [.. ConfigurationHelper.GetValue(ConfigurationKeys.AutoRecruitFirstList, string.Empty).Split(";")];
+                recruitTask.Level3PreferTags =
+                [
+                    .. ConfigurationHelper.GetValue(ConfigurationKeys.AutoRecruitFirstList, string.Empty)
+                        .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                ];
+                recruitTask.PreferTagEnabled = recruitTask.Level3PreferTags.Count != 0;
                 recruitTask.RefreshLevel3 = ConfigurationHelper.GetValue(ConfigurationKeys.RefreshLevel3, true);
                 recruitTask.ForceRefresh = ConfigurationHelper.GetValue(ConfigurationKeys.ForceRefresh, true);
-                recruitTask.Level1NotChoose = ConfigurationHelper.GetValue(ConfigurationKeys.NotChooseLevel1, true);
+                recruitTask.PreserveTagEnabled = ConfigurationHelper.GetValue(ConfigurationKeys.NotChooseLevel1, true);
+                recruitTask.PreserveTagList = recruitTask.PreserveTagEnabled ? [RecruitSettingsUserControlModel.LegacyRobotTag] : [];
                 recruitTask.MaxTimes = ConfigurationHelper.GetValue(ConfigurationKeys.RecruitMaxTimes, 4);
                 recruitTask.Level3Choose = ConfigurationHelper.GetValue(ConfigurationKeys.RecruitChooseLevel3, true);
                 recruitTask.Level3Time = ConfigurationHelper.GetValue(ConfigurationKeys.ChooseLevel3Time, 540);
                 recruitTask.Level4Choose = ConfigurationHelper.GetValue(ConfigurationKeys.RecruitChooseLevel4, true);
                 recruitTask.Level4Time = ConfigurationHelper.GetValue(ConfigurationKeys.ChooseLevel4Time, 540);
                 recruitTask.Level5Choose = ConfigurationHelper.GetValue(ConfigurationKeys.RecruitChooseLevel5, false);
-                recruitTask.Level5Time = ConfigurationHelper.GetValue(ConfigurationKeys.ChooseLevel5Time, 540);
                 ConfigurationHelper.DeleteValue(ConfigurationKeys.SelectExtraTags);
                 ConfigurationHelper.DeleteValue(ConfigurationKeys.AutoRecruitFirstList);
                 ConfigurationHelper.DeleteValue(ConfigurationKeys.RefreshLevel3);
@@ -411,7 +416,7 @@ public class ConfigConverter
                 ConfigurationHelper.DeleteValue(ConfigurationKeys.RoguelikeStopAtMaxLevel);
 
                 reclamationTask.Theme = ConfigurationHelper.GetValue(ConfigurationKeys.ReclamationTheme, ReclamationTheme.Tales);
-                reclamationTask.Mode = ConfigurationHelper.GetValue(ConfigurationKeys.ReclamationMode, ReclamationMode.Archive);
+                reclamationTask.Mode = ConfigurationHelper.GetValue(ConfigurationKeys.ReclamationMode, ReclamationMode.ProsperityInSave);
                 reclamationTask.ToolToCraft = ConfigurationHelper.GetValue(ConfigurationKeys.ReclamationToolToCraft, string.Empty).Replace('；', ';').Trim();
                 reclamationTask.IncrementMode = ConfigurationHelper.GetValue(ConfigurationKeys.ReclamationIncrementMode, 0);
                 reclamationTask.MaxCraftCountPerRound = ConfigurationHelper.GetValue(ConfigurationKeys.ReclamationMaxCraftCountPerRound, 16);

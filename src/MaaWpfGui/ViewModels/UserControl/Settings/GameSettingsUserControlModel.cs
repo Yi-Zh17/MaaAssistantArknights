@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MaaWpfGui.Constants;
+using MaaWpfGui.Extensions;
 using MaaWpfGui.Helper;
 using MaaWpfGui.States;
 using MaaWpfGui.Utilities;
@@ -36,6 +37,7 @@ public class GameSettingsUserControlModel : PropertyChangedBase
     static GameSettingsUserControlModel()
     {
         Instance = new();
+        LocalizationHelper.LanguageChanged += Instance.RefreshLocalization;
     }
 
     public static GameSettingsUserControlModel Instance { get; }
@@ -56,15 +58,13 @@ public class GameSettingsUserControlModel : PropertyChangedBase
     /// <summary>
     /// Gets the list of the client types.
     /// </summary>
-    public List<CombinedData> ClientTypeList { get; } =
-        [
-            new() { Display = LocalizationHelper.GetString("Official"), Value = Constants.Enums.ClientType.Official },
-            new() { Display = LocalizationHelper.GetString("Bilibili"), Value = Constants.Enums.ClientType.Bilibili },
-            new() { Display = LocalizationHelper.GetString("YoStarEN"), Value = Constants.Enums.ClientType.EN },
-            new() { Display = LocalizationHelper.GetString("YoStarJP"), Value = Constants.Enums.ClientType.JP },
-            new() { Display = LocalizationHelper.GetString("YoStarKR"), Value = Constants.Enums.ClientType.KR },
-            new() { Display = LocalizationHelper.GetString("Txwy"), Value = Constants.Enums.ClientType.Txwy },
-        ];
+    public LocalizedObservableList<string> ClientTypeList { get; } = new(
+        (Constants.Enums.ClientType.Official, "Official"),
+        (Constants.Enums.ClientType.Bilibili, "Bilibili"),
+        (Constants.Enums.ClientType.EN, "YoStarEN"),
+        (Constants.Enums.ClientType.JP, "YoStarJP"),
+        (Constants.Enums.ClientType.KR, "YoStarKR"),
+        (Constants.Enums.ClientType.Txwy, "Txwy"));
 
     private string _clientType = ConfigurationHelper.GetValue(ConfigurationKeys.ClientType, Constants.Enums.ClientType.Official);
 
@@ -79,8 +79,8 @@ public class GameSettingsUserControlModel : PropertyChangedBase
                 return _clientType;
             }
 
-            ConfigurationHelper.SetValue(ConfigurationKeys.ClientType, "Official");
-            return "Official";
+            ConfigurationHelper.SetValue(ConfigurationKeys.ClientType, Constants.Enums.ClientType.Official);
+            return Constants.Enums.ClientType.Official;
         }
 
         set {
@@ -100,11 +100,9 @@ public class GameSettingsUserControlModel : PropertyChangedBase
                 return;
             }
 
-            Task.Run(() => {
-                Instances.AsstProxy.LoadResource();
-            });
+            Task.Run(() => { Instances.AsstProxy.LoadResource(); });
 
-            SettingsViewModel.AskRestartToApplySettings(value is "YoStarEN");
+            SettingsViewModel.AskRestartToApplySettings(value is Constants.Enums.ClientType.EN);
         }
     }
 
@@ -120,7 +118,7 @@ public class GameSettingsUserControlModel : PropertyChangedBase
                (oldType != "Bilibili" || newType != "Official");
     }
 
-    private bool _deploymentWithPause = Convert.ToBoolean(ConfigurationHelper.GetValue(ConfigurationKeys.RoguelikeDeploymentWithPause, bool.FalseString));
+    private bool _deploymentWithPause = ConfigurationHelper.GetValue(ConfigurationKeys.RoguelikeDeploymentWithPause, false);
 
     public bool DeploymentWithPause
     {
@@ -154,7 +152,7 @@ public class GameSettingsUserControlModel : PropertyChangedBase
         }
     }
 
-    private bool _copilotWithScript = Convert.ToBoolean(ConfigurationHelper.GetValue(ConfigurationKeys.CopilotWithScript, bool.FalseString));
+    private bool _copilotWithScript = ConfigurationHelper.GetValue(ConfigurationKeys.CopilotWithScript, false);
 
     public bool CopilotWithScript
     {
@@ -165,7 +163,7 @@ public class GameSettingsUserControlModel : PropertyChangedBase
         }
     }
 
-    private bool _manualStopWithScript = Convert.ToBoolean(ConfigurationHelper.GetValue(ConfigurationKeys.ManualStopWithScript, bool.FalseString));
+    private bool _manualStopWithScript = ConfigurationHelper.GetValue(ConfigurationKeys.ManualStopWithScript, false);
 
     public bool ManualStopWithScript
     {
@@ -276,7 +274,7 @@ public class GameSettingsUserControlModel : PropertyChangedBase
         }
     }
 
-    private bool _blockSleep = Convert.ToBoolean(ConfigurationHelper.GetValue(ConfigurationKeys.BlockSleep, bool.FalseString));
+    private bool _blockSleep = ConfigurationHelper.GetValue(ConfigurationKeys.BlockSleep, false);
 
     public bool BlockSleep
     {
@@ -288,7 +286,7 @@ public class GameSettingsUserControlModel : PropertyChangedBase
         }
     }
 
-    private bool _blockSleepWithScreenOn = Convert.ToBoolean(ConfigurationHelper.GetValue(ConfigurationKeys.BlockSleepWithScreenOn, bool.TrueString));
+    private bool _blockSleepWithScreenOn = ConfigurationHelper.GetValue(ConfigurationKeys.BlockSleepWithScreenOn, true);
 
     public bool BlockSleepWithScreenOn
     {
@@ -316,7 +314,7 @@ public class GameSettingsUserControlModel : PropertyChangedBase
         }
     }
 
-    private bool _enablePenguin = Convert.ToBoolean(ConfigurationHelper.GetValue(ConfigurationKeys.EnablePenguin, bool.TrueString));
+    private bool _enablePenguin = ConfigurationHelper.GetValue(ConfigurationKeys.EnablePenguin, true);
 
     /// <summary>
     /// Gets or sets a value indicating whether to enable penguin upload.
@@ -330,7 +328,7 @@ public class GameSettingsUserControlModel : PropertyChangedBase
         }
     }
 
-    private bool _enableYituliu = Convert.ToBoolean(ConfigurationHelper.GetValue(ConfigurationKeys.EnableYituliu, bool.TrueString));
+    private bool _enableYituliu = ConfigurationHelper.GetValue(ConfigurationKeys.EnableYituliu, true);
 
     /// <summary>
     /// Gets or sets a value indicating whether to enable yituliu upload.
@@ -348,29 +346,57 @@ public class GameSettingsUserControlModel : PropertyChangedBase
 
     #region 任务超时
 
-    private int _taskTimeoutMinutes = ConfigurationHelper.GetValue(ConfigurationKeys.TaskTimeoutMinutes, 60);
+    // 防止乘以 60000 毫秒时 int 溢出，int.MaxValue / 60000 ≈ 35791
+    private const int MaxMinutes = 11451;
 
-    public int TaskTimeoutMinutes
-    {
-        get => _taskTimeoutMinutes;
-        set {
-            SetAndNotify(ref _taskTimeoutMinutes, value);
-            _runningState.TaskTimeoutMinutes = value;
-            ConfigurationHelper.SetValue(ConfigurationKeys.TaskTimeoutMinutes, value.ToString());
-        }
-    }
-
-    private int _reminderIntervalMinutes = ConfigurationHelper.GetValue(ConfigurationKeys.ReminderIntervalMinutes, 30);
+    private int _reminderIntervalMinutes = ConfigurationHelper.GetValue(ConfigurationKeys.ReminderIntervalMinutes, 30).Clamp(1, MaxMinutes);
 
     public int ReminderIntervalMinutes
     {
         get => _reminderIntervalMinutes;
         set {
+            value = value.Clamp(1, MaxMinutes);
             SetAndNotify(ref _reminderIntervalMinutes, value);
             _runningState.ReminderIntervalMinutes = value;
             ConfigurationHelper.SetValue(ConfigurationKeys.ReminderIntervalMinutes, value.ToString());
         }
     }
 
+    private int _stallTimeoutMinutes = ConfigurationHelper.GetValue(ConfigurationKeys.StallTimeoutMinutes, 25).Clamp(0, MaxMinutes);
+
+    public int StallTimeoutMinutes
+    {
+        get => _stallTimeoutMinutes;
+        set {
+            value = value.Clamp(0, MaxMinutes);
+            SetAndNotify(ref _stallTimeoutMinutes, value);
+            _runningState.StallTimeoutMinutes = value;
+            ConfigurationHelper.SetValue(ConfigurationKeys.StallTimeoutMinutes, value.ToString());
+        }
+    }
+
+    private bool _stallTimeoutEnabled = ConfigurationHelper.GetValue(ConfigurationKeys.StallTimeoutEnabled, true);
+
+    /// <summary>
+    /// Gets or sets a value indicating whether是否启用停滞检测
+    /// </summary>
+    public bool StallTimeoutEnabled
+    {
+        get => _stallTimeoutEnabled;
+        set {
+            SetAndNotify(ref _stallTimeoutEnabled, value);
+            _runningState.StallTimeoutEnabled = value;
+            ConfigurationHelper.SetValue(ConfigurationKeys.StallTimeoutEnabled, value.ToString());
+        }
+    }
+
     #endregion 任务超时
+
+    /// <summary>
+    /// 刷新构造时缓存的本地化列表文本。
+    /// </summary>
+    private void RefreshLocalization()
+    {
+        ClientTypeList.RefreshLocalization();
+    }
 }

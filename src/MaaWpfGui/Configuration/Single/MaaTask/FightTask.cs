@@ -65,6 +65,11 @@ public class FightTask : BaseTask, IJsonOnDeserialized
     public int DropCount { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether 指定材料按库存目标计算
+    /// </summary>
+    public bool IsInventoryTarget { get; set; }
+
+    /// <summary>
     /// Gets or sets 是否启用次数限制
     /// </summary>
     public bool? EnableTimesLimit { get; set; } = false;
@@ -93,6 +98,10 @@ public class FightTask : BaseTask, IJsonOnDeserialized
     /// Gets or sets a value indicating whether 使用临期药
     /// </summary>
     public bool UseExpiringMedicine { get; set; }
+
+    public int MedicineExpireDays { get; set; } = 2;
+
+    public bool UseExpireMedicineForActivity { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether 剿灭关卡自定

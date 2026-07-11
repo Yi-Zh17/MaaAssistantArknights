@@ -22,6 +22,7 @@ using MaaWpfGui.Constants;
 using MaaWpfGui.Constants.Enums;
 using MaaWpfGui.Helper;
 using MaaWpfGui.Main;
+using MaaWpfGui.Models;
 using MaaWpfGui.Models.AsstTasks;
 using MaaWpfGui.Utilities;
 using MaaWpfGui.Utilities.ValueType;
@@ -40,13 +41,14 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel, Roguelik
     static RoguelikeSettingsUserControlModel()
     {
         Instance = new();
+        Instances.AsstProxy.AsstSubTaskMsgEvent += Instance.ProcSubTaskMsg;
+        LocalizationHelper.LanguageChanged += Instance.RefreshLocalization;
     }
 
     public static RoguelikeSettingsUserControlModel Instance { get; }
 
     public void InitRoguelike()
     {
-        GenerateRoguelikeThemeList();
         UpdateRoguelikeParams();
     }
 
@@ -59,15 +61,6 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel, Roguelik
         UpdateRoguelikeSquadList();
         UpdateRoguelikeStartWithAllDict();
         UpdateRoguelikeCoreCharList();
-    }
-
-    private void GenerateRoguelikeThemeList()
-    {
-        RoguelikeThemeList.Add(new() { Display = LocalizationHelper.GetString("RoguelikeThemePhantom"), Value = Theme.Phantom });
-        RoguelikeThemeList.Add(new() { Display = LocalizationHelper.GetString("RoguelikeThemeMizuki"), Value = Theme.Mizuki });
-        RoguelikeThemeList.Add(new() { Display = LocalizationHelper.GetString("RoguelikeThemeSami"), Value = Theme.Sami });
-        RoguelikeThemeList.Add(new() { Display = LocalizationHelper.GetString("RoguelikeThemeSarkaz"), Value = Theme.Sarkaz });
-        RoguelikeThemeList.Add(new() { Display = LocalizationHelper.GetString("RoguelikeThemeJieGarden"), Value = Theme.JieGarden });
     }
 
     private void UpdateRoguelikeDifficultyList()
@@ -93,7 +86,8 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel, Roguelik
         }
 
         // 验证当前选中的难度是否在新列表中
-        RoguelikeDifficulty = RoguelikeDifficultyList.Any(item => item.Value == RoguelikeDifficulty) ? difficulty : -1;
+        RoguelikeDifficulty = RoguelikeDifficultyList.Any(item => item.Value == difficulty) ? difficulty : -1;
+        NotifyOfPropertyChange(nameof(RoguelikeDifficulty));
     }
 
     private static int GetMaxDifficultyForTheme(Theme theme) => theme switch {
@@ -363,7 +357,12 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel, Roguelik
     /// <summary>
     /// Gets the list of roguelike lists.
     /// </summary>
-    public List<GenericCombinedData<Theme>> RoguelikeThemeList { get; } = [];
+    public LocalizedObservableList<Theme> RoguelikeThemeList { get; } = new(
+        (Theme.Phantom, "RoguelikeThemePhantom"),
+        (Theme.Mizuki, "RoguelikeThemeMizuki"),
+        (Theme.Sami, "RoguelikeThemeSami"),
+        (Theme.Sarkaz, "RoguelikeThemeSarkaz"),
+        (Theme.JieGarden, "RoguelikeThemeJieGarden"));
 
     /// <summary>
     /// Gets or sets the Roguelike theme.
@@ -459,7 +458,7 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel, Roguelik
                 return;
             }
 
-            Instances.TaskQueueViewModel.AddLog("Core Char:" + value);
+            Instances.TaskQueueViewModel.AddLog("Core Char: " + value);
         }
     }
 
@@ -797,7 +796,7 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel, Roguelik
         set => SetTaskConfig<RoguelikeTask>(t => t.StopWhenLevelMax == value, t => t.StopWhenLevelMax = value);
     }
 
-    private bool _roguelikeDelayAbortUntilCombatComplete = Convert.ToBoolean(ConfigurationHelper.GetValue(ConfigurationKeys.RoguelikeDelayAbortUntilCombatComplete, bool.FalseString));
+    private bool _roguelikeDelayAbortUntilCombatComplete = ConfigurationHelper.GetValue(ConfigurationKeys.RoguelikeDelayAbortUntilCombatComplete, false);
 
     /// <summary>
     /// Gets or sets a value indicating whether delay abort until battle complete
@@ -838,15 +837,15 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel, Roguelik
         }
     }
 
-    public override void ProcSubTaskMsg(AsstMsg msg, JObject details)
+    public void ProcSubTaskMsg(AsstMsg msg, AsstSubTaskMsg? details)
     {
         if (msg != AsstMsg.SubTaskExtraInfo)
         {
             return;
         }
 
-        var subTaskDetails = details["details"];
-        switch (details["what"]?.ToString() ?? string.Empty)
+        var subTaskDetails = details?.Details;
+        switch (details?.What ?? string.Empty)
         {
             case "RoguelikeInvestmentReachFull":
                 Instances.TaskQueueViewModel.AddLog(LocalizationHelper.GetString("RoguelikeInvestmentReachFull"), UiLogColor.Info);
@@ -854,11 +853,11 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel, Roguelik
                 break;
 
             case "RoguelikeInvestmentReachLimit":
-                Instances.TaskQueueViewModel.AddLog(string.Format(LocalizationHelper.GetString("RoguelikeInvestmentReachLimit"), subTaskDetails!["limit"]), UiLogColor.Info);
+                Instances.TaskQueueViewModel.AddLog(LocalizationHelper.GetStringFormat("RoguelikeInvestmentReachLimit", subTaskDetails!["limit"]), UiLogColor.Info);
                 break;
 
             case "RoguelikeInvestment":
-                Instances.TaskQueueViewModel.AddLog(string.Format(LocalizationHelper.GetString("RoguelikeInvestment"), subTaskDetails!["count"], subTaskDetails["total"], subTaskDetails["deposit"]), UiLogColor.Info);
+                Instances.TaskQueueViewModel.AddLog(LocalizationHelper.GetStringFormat("RoguelikeInvestment", subTaskDetails!["count"], subTaskDetails["total"], subTaskDetails["deposit"]), UiLogColor.Info);
                 AchievementTrackerHelper.Instance.SetProgress(AchievementIds.RoguelikeGoldMax, (int)subTaskDetails["deposit"]!);
                 break;
 
@@ -881,8 +880,8 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel, Roguelik
                         }
                     }
 
-                    var roguelikeInfo = string.Format(
-                        LocalizationHelper.GetString("RoguelikeSettlement"),
+                    var roguelikeInfo = LocalizationHelper.GetStringFormat(
+                        "RoguelikeSettlement",
                         pass ? "✓" : "✗",
                         report["floor"],
                         report["step"],
@@ -936,14 +935,14 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel, Roguelik
                 var options = (subTaskDetails!["options"]! as JArray) ?? [];
                 var logLines = new List<string>
                 {
-                    string.Format(LocalizationHelper.GetString("RoguelikeEncounterOptions"), options.Count, UiLogColor.EventIS),
+                    LocalizationHelper.GetStringFormat("RoguelikeEncounterOptions", options.Count, UiLogColor.EventIS),
                 };
 
                 foreach (var option in options)
                 {
                     string messageKey = option["enabled"]!.Value<bool>() ? "RoguelikeEncounterEnabledOption" : "RoguelikeEncounterDisabledOption";
                     var text = option["text"]!.ToString();
-                    logLines.Add(string.Format(LocalizationHelper.GetString(messageKey), text));
+                    logLines.Add(LocalizationHelper.GetStringFormat(messageKey, text));
                 }
 
                 Instances.TaskQueueViewModel.AddLog(string.Join("\n", logLines), UiLogColor.EventIS, updateCardImage: true);
@@ -971,7 +970,7 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel, Roguelik
             case "RoguelikeCoppersRecognitionError":
                 {
                     var recognizedName = subTaskDetails!["recognized_name"]?.ToString() ?? "Unknown";
-                    var message = string.Format(LocalizationHelper.GetString("RoguelikeCoppersRecognitionError"), recognizedName);
+                    var message = LocalizationHelper.GetStringFormat("RoguelikeCoppersRecognitionError", recognizedName);
                     Instances.TaskQueueViewModel.AddLog(message, UiLogColor.Error);
                     break;
                 }
@@ -980,7 +979,7 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel, Roguelik
                 {
                     var toDiscard = subTaskDetails!["to_discard"]?.ToString() ?? "Unknown";
                     var toPickup = subTaskDetails["to_pickup"]?.ToString() ?? "Unknown";
-                    var message = string.Format(LocalizationHelper.GetString("RoguelikeCoppersExchange"), toDiscard, toPickup);
+                    var message = LocalizationHelper.GetStringFormat("RoguelikeCoppersExchange", toDiscard, toPickup);
                     Instances.TaskQueueViewModel.AddLog(message, UiLogColor.EventIS);
                     break;
                 }
@@ -998,7 +997,7 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel, Roguelik
                         "Nian" => LocalizationHelper.GetString("RoguelikePlaytimeNian"),
                         _ => targetSubtype ?? "Unknown",
                     };
-                    Instances.TaskQueueViewModel.AddLog(string.Format(LocalizationHelper.GetString("RoguelikeJieGardenTargetFound"), localizedTarget), UiLogColor.Success);
+                    Instances.TaskQueueViewModel.AddLog(LocalizationHelper.GetStringFormat("RoguelikeJieGardenTargetFound", localizedTarget), UiLogColor.Success);
                     break;
                 }
 
@@ -1025,19 +1024,19 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel, Roguelik
                 string prev = subTaskDetails["prev"]?.ToString() ?? "UnKnown";
                 if (deepen_or_weaken == 1 && prev == string.Empty)
                 {
-                    Instances.TaskQueueViewModel.AddLog(string.Format(LocalizationHelper.GetString("RoguelikeGainParadigm"), cur), UiLogColor.Info);
+                    Instances.TaskQueueViewModel.AddLog(LocalizationHelper.GetStringFormat("RoguelikeGainParadigm", cur), UiLogColor.Info);
                 }
                 else if (deepen_or_weaken == 1 && prev != string.Empty)
                 {
-                    Instances.TaskQueueViewModel.AddLog(string.Format(LocalizationHelper.GetString("RoguelikeDeepenParadigm"), cur, prev), UiLogColor.Info);
+                    Instances.TaskQueueViewModel.AddLog(LocalizationHelper.GetStringFormat("RoguelikeDeepenParadigm", cur, prev), UiLogColor.Info);
                 }
                 else if (deepen_or_weaken == -1 && cur == string.Empty)
                 {
-                    Instances.TaskQueueViewModel.AddLog(string.Format(LocalizationHelper.GetString("RoguelikeLoseParadigm"), string.Empty, prev), UiLogColor.Info);
+                    Instances.TaskQueueViewModel.AddLog(LocalizationHelper.GetStringFormat("RoguelikeLoseParadigm", string.Empty, prev), UiLogColor.Info);
                 }
                 else if (deepen_or_weaken == -1 && cur != string.Empty)
                 {
-                    Instances.TaskQueueViewModel.AddLog(string.Format(LocalizationHelper.GetString("RoguelikeWeakenParadigm"), cur, prev), UiLogColor.Info);
+                    Instances.TaskQueueViewModel.AddLog(LocalizationHelper.GetStringFormat("RoguelikeWeakenParadigm", cur, prev), UiLogColor.Info);
                 }
 
                 break;
@@ -1147,5 +1146,17 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel, Roguelik
                 return result;
             }
         }
+    }
+
+    /// <summary>
+    /// 刷新构造时缓存的本地化列表文本。
+    /// </summary>
+    private void RefreshLocalization()
+    {
+        RoguelikeThemeList.RefreshLocalization();
+        UpdateRoguelikeDifficultyList();
+        UpdateRoguelikeModeList();
+        UpdateRoguelikeRolesList();
+        UpdateRoguelikeSquadList();
     }
 }

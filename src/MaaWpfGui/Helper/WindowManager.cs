@@ -33,10 +33,10 @@ public class WindowManager : Stylet.WindowManager
 
     private static readonly ILogger _logger = Log.ForContext<WindowManager>();
 
-    private readonly bool _loadWindowPlacement = Convert.ToBoolean(ConfigurationHelper.GetGlobalValue(ConfigurationKeys.LoadWindowPlacement, bool.TrueString));
-    private readonly bool _saveWindowPlacement = Convert.ToBoolean(ConfigurationHelper.GetGlobalValue(ConfigurationKeys.SaveWindowPlacement, bool.TrueString));
-    private readonly bool _minimizeDirectly = Convert.ToBoolean(ConfigurationHelper.GetGlobalValue(ConfigurationKeys.MinimizeDirectly, bool.FalseString));
-    private readonly bool _minimizeToTray = Convert.ToBoolean(ConfigurationHelper.GetGlobalValue(ConfigurationKeys.MinimizeToTray, bool.FalseString));
+    private readonly bool _loadWindowPlacement = ConfigurationHelper.GetGlobalValue(ConfigurationKeys.LoadWindowPlacement, true);
+    private readonly bool _saveWindowPlacement = ConfigurationHelper.GetGlobalValue(ConfigurationKeys.SaveWindowPlacement, true);
+    private readonly bool _minimizeDirectly = ConfigurationHelper.GetGlobalValue(ConfigurationKeys.MinimizeDirectly, false);
+    private readonly bool _minimizeToTray = ConfigurationHelper.GetGlobalValue(ConfigurationKeys.MinimizeToTray, false);
 
     /// <summary>
     /// Center other windows in MaaWpfGui.RootView
@@ -159,9 +159,22 @@ public class WindowManager : Stylet.WindowManager
     /// <returns>是否成功激活</returns>
     public static bool ShowWindow(Window window)
     {
-        window.Show();
-        window.WindowState = WindowState.Normal;
-        return window.Activate();
+        if (window.Dispatcher.HasShutdownStarted || window.Dispatcher.HasShutdownFinished)
+        {
+            return false;
+        }
+
+        try
+        {
+            window.Show();
+            window.WindowState = WindowState.Normal;
+            return window.Activate();
+        }
+        catch (InvalidOperationException e)
+        {
+            _logger.Warning(e, "Skipped showing window because it is closing or already closed");
+            return false;
+        }
     }
 
     /// <summary>

@@ -14,17 +14,24 @@
 #nullable enable
 
 using System;
+using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using HandyControl.Controls;
+using HandyControl.Data;
 using HandyControl.Tools;
 using JetBrains.Annotations;
+using MaaWpfGui.Configuration.Factory;
 using MaaWpfGui.Constants;
 using MaaWpfGui.Helper;
 using MaaWpfGui.Main;
+using MaaWpfGui.Services;
 using MaaWpfGui.ViewModels.UserControl.Settings;
 using Microsoft.WindowsAPICodePack.Taskbar;
+using Serilog;
 using Stylet;
 
 namespace MaaWpfGui.ViewModels.UI;
@@ -34,11 +41,20 @@ namespace MaaWpfGui.ViewModels.UI;
 /// </summary>
 public class RootViewModel : Conductor<Screen>.Collection.OneActive
 {
+    private static readonly ILogger _logger = Log.ForContext<RootViewModel>();
+
     /// <inheritdoc/>
     protected override void OnViewLoaded()
     {
         InitViewModels();
         _ = InitProxy();
+
+        // 宿醉彩蛋弹窗依赖 RootView 已渲染完毕的 Dialog 容器，
+        // 必须在主窗口显示之后再弹出，否则弹不出
+        // 必须在其他内容初始化之前执行，否则其他内容语言可能已经被初始化为非宿醉语言
+        Instances.SettingsViewModel.HangoverEnd();
+
+        ShowVersionMismatchWarningOnStartup();
         if (SettingsViewModel.VersionUpdateSettings.VersionType == VersionUpdateSettingsUserControlModel.UpdateVersionType.Nightly &&
             !SettingsViewModel.VersionUpdateSettings.HasAcknowledgedNightlyWarning)
         {
@@ -64,6 +80,48 @@ public class RootViewModel : Conductor<Screen>.Collection.OneActive
         });
 
         _ = Instances.VersionUpdateDialogViewModel.ShowUpdateOrDownload();
+
+        // 主窗口已显示，此时弹窗不会导致 WPF 因无窗口而退出
+        Task.Run(ConfigBrokenCheck);
+        Task.Run(ToastNotificationCheck);
+    }
+
+    private static void ConfigBrokenCheck()
+    {
+        var recoveryMessage = ConfigFactory.ConsumePendingRecoveryMessage();
+        if (recoveryMessage is not null)
+        {
+            MessageBoxHelper.Show(recoveryMessage, LocalizationHelper.GetString("ConfigurationBrokenCaption"), MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private static void ToastNotificationCheck()
+    {
+        if (!SettingsViewModel.GuiSettings.UseNotify)
+        {
+            return;
+        }
+
+        var (isAvailable, detail) = ToastNotification.ToastNotificationCheck();
+        if (!isAvailable)
+        {
+            Growl.Error(LocalizationHelper.GetStringFormat("ToastNotificationUnavailable", detail));
+            _logger.Error(LocalizationHelper.GetStringFormat("ToastNotificationUnavailable", detail));
+        }
+    }
+
+    private static void ShowVersionMismatchWarningOnStartup()
+    {
+        var uiVersion = VersionUpdateSettingsUserControlModel.UiVersion;
+        var coreVersion = VersionUpdateSettingsUserControlModel.CoreVersion;
+        if (!Instances.VersionUpdateDialogViewModel.IsDebugVersion() && uiVersion != coreVersion)
+        {
+            MessageBoxHelper.Show(
+                LocalizationHelper.GetStringFormat("VersionMismatch", uiVersion, coreVersion),
+                LocalizationHelper.GetString("Error"),
+                iconKey: ResourceToken.FatalGeometry,
+                iconBrushKey: ResourceToken.DangerBrush);
+        }
     }
 
     private static async Task InitProxy()
@@ -100,7 +158,9 @@ public class RootViewModel : Conductor<Screen>.Collection.OneActive
         set => SetAndNotify(ref _windowTitle, value);
     }
 
-    private string _windowVersionUpdateInfo = string.Empty;
+    private string _windowVersionUpdateInfo = FakeUpdateHelper.HasPendingFakeUpdate
+        ? $"{LocalizationHelper.GetString("NewVersionFoundTitle")}: {FakeUpdateHelper.TargetVersion}"
+        : string.Empty;
 
     /// <summary>
     /// Gets or sets the version update info.
@@ -161,7 +221,7 @@ public class RootViewModel : Conductor<Screen>.Collection.OneActive
         }
     }
 
-    private bool _windowTitleScrollable = Convert.ToBoolean(ConfigurationHelper.GetGlobalValue(ConfigurationKeys.WindowTitleScrollable, bool.FalseString));
+    private bool _windowTitleScrollable = ConfigurationHelper.GetGlobalValue(ConfigurationKeys.WindowTitleScrollable, false);
 
     /// <summary>
     /// Gets or sets a value indicating whether to scroll the window title.
@@ -172,7 +232,7 @@ public class RootViewModel : Conductor<Screen>.Collection.OneActive
         set => SetAndNotify(ref _windowTitleScrollable, value);
     }
 
-    private bool _showCloseButton = !Convert.ToBoolean(ConfigurationHelper.GetGlobalValue(ConfigurationKeys.HideCloseButton, bool.FalseString));
+    private bool _showCloseButton = !ConfigurationHelper.GetGlobalValue(ConfigurationKeys.HideCloseButton, false);
 
     /// <summary>
     /// Gets or sets a value indicating whether to show close button.
@@ -205,6 +265,31 @@ public class RootViewModel : Conductor<Screen>.Collection.OneActive
         IsWindowTopMost = !IsWindowTopMost;
     }
 
+    [UsedImplicitly]
+    public void ManualPackagePreviewDragOver(object sender, DragEventArgs e)
+    {
+        if (!TryGetDroppedZipFile(e, out _))
+        {
+            return;
+        }
+
+        e.Effects = DragDropEffects.Copy;
+        e.Handled = true;
+    }
+
+    [UsedImplicitly]
+    public void ManualPackageDrop(object sender, DragEventArgs e)
+    {
+        if (!TryGetDroppedZipFile(e, out string packagePath))
+        {
+            return;
+        }
+
+        _logger.Information("Dropped zip file detected in main window: {PackagePath}", packagePath);
+        e.Handled = true;
+        HandleImportedPackage(packagePath);
+    }
+
     /// <inheritdoc/>
     protected override void OnClose()
     {
@@ -221,6 +306,90 @@ public class RootViewModel : Conductor<Screen>.Collection.OneActive
     private static int _gifIndex = -1;
 
     private static string _gifPath = string.Empty;
+
+    private static bool TryGetDroppedZipFile(DragEventArgs e, out string packagePath)
+    {
+        packagePath = string.Empty;
+        if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+        {
+            return false;
+        }
+
+        if (e.Data.GetData(DataFormats.FileDrop) is not string[] files || files.Length == 0)
+        {
+            return false;
+        }
+
+        string candidatePath = files[0];
+        if (!File.Exists(candidatePath) || !candidatePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        packagePath = candidatePath;
+        return true;
+    }
+
+    private static void HandleImportedPackage(string packagePath)
+    {
+        string currentVersion = VersionUpdateSettingsUserControlModel.CoreVersion;
+        string architecture = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant();
+        string normalizedArchitecture = architecture.StartsWith("arm", StringComparison.OrdinalIgnoreCase)
+            ? "arm64"
+            : "x64";
+
+        PendingUpdateApplier.FullPackageInspectionResult fullPackageInspection =
+            PendingUpdateApplier.InspectSupportedLocalFullPackage(packagePath, currentVersion, architecture);
+
+        if (fullPackageInspection.IsSupported
+            && !Dialogs.VersionUpdateDialogViewModel.ConfirmFullPackageUpdate(packagePath))
+        {
+            _logger.Information("Dropped full package import canceled by user before registration: {PackagePath}", packagePath);
+            return;
+        }
+
+        var importResult = PendingUpdateApplier.TryRegisterLocalPackage(
+            packagePath,
+            currentVersion,
+            architecture,
+            fullPackageInspection);
+        _logger.Information(
+            "Dropped zip import result: status={Status}, sourceVersion={SourceVersion}, targetVersion={TargetVersion}",
+            importResult.Status,
+            importResult.SourceVersion,
+            importResult.TargetVersion);
+
+        switch (importResult.Status)
+        {
+            case PendingUpdateApplier.LocalPackageImportStatus.OtaPackageRegistered:
+            case PendingUpdateApplier.LocalPackageImportStatus.FullPackageRegistered:
+                string targetVersion = importResult.TargetVersion ?? string.Empty;
+                bool preserveExistingUpdateInfo = PendingUpdateApplier.ShouldPreserveExistingUpdateBody(targetVersion);
+                Instances.VersionUpdateDialogViewModel.UpdateTag = targetVersion;
+                if (!preserveExistingUpdateInfo)
+                {
+                    Instances.VersionUpdateDialogViewModel.UpdateInfo = string.Empty;
+                }
+
+                Instances.VersionUpdateDialogViewModel.UpdatePackageName = packagePath;
+                _logger.Information(
+                    "Showing restart prompt for imported update package: {PackagePath}, status={Status}",
+                    packagePath,
+                    importResult.Status);
+                _ = Instances.VersionUpdateDialogViewModel.AskToRestartForImportedPackage();
+                return;
+
+            default:
+                _logger.Warning("Showing unsupported package warning for dropped package: {PackagePath}", packagePath);
+                MessageBoxHelper.Show(
+                    LocalizationHelper.GetStringFormat("LocalUpdatePackageUnsupported", Path.GetFileName(packagePath), currentVersion, normalizedArchitecture),
+                    LocalizationHelper.GetString("Warning"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning,
+                    ok: LocalizationHelper.GetString("Ok"));
+                return;
+        }
+    }
 
     public string GifPath
     {

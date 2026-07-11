@@ -9,6 +9,7 @@
 #include "Task/Fight/SideStoryReopenTask.h"
 #include "Task/Fight/StageDropsTaskPlugin.h"
 #include "Task/Fight/StageNavigationTask.h"
+#include "Task/Miscellaneous/ScreenshotTaskPlugin.h"
 #include "Task/ProcessTask.h"
 #include "Utils/Logger.hpp"
 #include <ranges>
@@ -34,6 +35,7 @@ asst::FightTask::FightTask(const AsstCallback& callback, Assistant* inst) :
         .set_times_limit("PRTS3", 0)
         .set_times_limit("EndOfAction", 0)
         .set_retry_times(5);
+    m_start_up_task_ptr->register_plugin<ScreenshotTaskPlugin>();
 
     m_stage_navigation_task_ptr->set_fight_task_ptr(m_fight_task_ptr);
     m_stage_navigation_task_ptr->set_enable(false).set_retry_times(0);
@@ -66,7 +68,24 @@ bool asst::FightTask::set_params(const json::value& params)
 
     const std::string stage = params.get("stage", "");
     const int medicine = params.get("medicine", 0);
-    const int expiring_medicine = params.get("expiring_medicine", 0);
+    int medicine_expire_days = 0;
+    if (auto expiring_day_opt = params.find<int>("medicine_expire_days"); !expiring_day_opt) {
+        if (auto opt = params.find<int>("expiring_medicine"); opt) {
+            medicine_expire_days = opt.value() == 0 ? 0 : 2;
+            LogWarn << "================  DEPRECATED  ================";
+            LogWarn << __FUNCTION__
+                    << " 'expiring_medicine' is deprecated since v6.8.0, please use 'medicine_expire_days' instead.";
+            LogWarn << "================  DEPRECATED  ================";
+        }
+    }
+    else {
+        medicine_expire_days = expiring_day_opt.value();
+    }
+    if (medicine_expire_days < 0) {
+        LogError << __FUNCTION__ << "Invalid medicine_expire_days," << medicine_expire_days;
+        return false;
+    }
+
     const int stone = params.get("stone", 0);
     const int times = params.get("times", INT_MAX);
     const int series = params.get("series", 1);
@@ -110,8 +129,12 @@ bool asst::FightTask::set_params(const json::value& params)
             m_start_up_task_ptr->set_tasks({ "StageBegin" }).set_times_limit("GoLastBattle", 0);
             if (stage.starts_with("SSReopen-") && stage.length() == 11) {
                 m_sidestory_reopen_task_ptr->set_sidestory_name(stage.substr(9));
+                if (!m_stage_navigation_task_ptr->set_stage_name(stage.substr(9) + "-OpenOpt")) {
+                    Log.error("StageNavigationTask not support sidestory reopen stage", stage);
+                    return false;
+                }
                 m_sidestory_reopen_task_ptr->set_enable(true);
-                m_stage_navigation_task_ptr->set_enable(false);
+                m_stage_navigation_task_ptr->set_enable(true);
             }
             else if (m_stage_navigation_task_ptr->set_stage_name(stage)) {
                 m_sidestory_reopen_task_ptr->set_enable(false);
@@ -124,19 +147,18 @@ bool asst::FightTask::set_params(const json::value& params)
                 return false;
             }
         }
-        m_start_up_task_ptr->set_enable(!m_sidestory_reopen_task_ptr->get_enable());
         m_fight_task_ptr->set_enable(!m_sidestory_reopen_task_ptr->get_enable());
         m_stage_drops_plugin_ptr->set_server(server);
     }
 
     m_stage_drops_plugin_ptr->set_target_stage(stage);
     m_fight_task_ptr->set_times_limit("MedicineConfirm", medicine)
-        .set_times_limit("ExpiringMedicineConfirm", expiring_medicine)
+        .set_times_limit("ExpiringMedicineConfirm", medicine_expire_days == 0 ? 0 : 9999)
         .set_times_limit("StoneConfirm", stone)
         .set_times_limit("StartButton1", times)
         .set_times_limit("StartButton2", times);
     m_medicine_plugin->set_count(medicine);
-    m_medicine_plugin->set_use_expiring(expiring_medicine != 0);
+    m_medicine_plugin->set_expire_days(medicine_expire_days);
     m_medicine_plugin->set_dr_grandet(is_dr_grandet);
     m_dr_grandet_task_plugin_ptr->set_enable(is_dr_grandet);
     m_stage_drops_plugin_ptr->set_enable_penguin(enable_penguin);
@@ -145,7 +167,7 @@ bool asst::FightTask::set_params(const json::value& params)
     m_stage_drops_plugin_ptr->set_yituliu_id(penguin_id);
 
     m_sidestory_reopen_task_ptr->set_medicine(medicine);
-    m_sidestory_reopen_task_ptr->set_expiring_medicine(expiring_medicine);
+    m_sidestory_reopen_task_ptr->set_expiring_medicine(medicine_expire_days == 0 ? 0 : 9999);
     m_sidestory_reopen_task_ptr->set_stone(stone);
     m_sidestory_reopen_task_ptr->set_enable_penguin(enable_penguin);
     m_sidestory_reopen_task_ptr->set_penguin_id(std::move(penguin_id));

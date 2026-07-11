@@ -64,6 +64,8 @@ Only supports switching to already logged-in accounts, using login name for iden
 Official server: `123****4567`, can input `123****4567`, `4567`, `123`, or `3****4567`  
 <br>
 Bilibili server: `Zhang San`, can input `Zhang San`, `Zhang`, or `San`  
+<br>
+Traditional Chinese server: Email-based, e.g. `ab****01@gmail.com`. Entering the plain-text portion without asterisks is recommended, e.g. `01@gmail`  
 :::  
 ::::
 
@@ -118,7 +120,7 @@ Whether to enable this task.
 Stage name, by default empty, recognizes current/last stage. Editing in run-time is not supported.  
 Currently supported stages for navigation include:
 
-- All mainline stages. You can add `-NORMAL` or `-HARD` at the end of the stage to switch between standard or challenge mode.
+- All mainline stages. You can add `-NORMAL` or `-HARD` at the end of the stage to switch difficulty: Chapters 10-14 map to Standard/Adverse, while Chapters 15+ map to Normal/Raid.
 - For LMD and Battle Record stages 5/6, must input `CE-6` / `LS-6`. MAA will automatically switch to stage 5 if stage 6 cannot be delegated.
 - Skill Summary, Voucher, and Carbon stage 5, must input `CA-5` / `AP-5` / `SK-5`.
 - All chip stages. Must input complete stage code, e.g. `PR-A-1`.
@@ -134,8 +136,11 @@ Currently supported stages for navigation include:
   ::: field name="medicine" type="number" optional default="0"  
   Maximum number of Sanity Potions used.  
   :::  
-  ::: field name="expiring_medicine" type="number" optional default="0"  
-  Maximum number of Sanity Potions expiring within 48 hours.  
+  ::: field name="medicine_expire_days" type="number" optional default="0"  
+  Use Sanity Potions that expire within the specified number of days. `0` means no expiring potions will be used.  
+  :::  
+  ::: field name="expiring_medicine" type="number" optional default="0" deprecated  
+  Deprecated since v6.8.0, please use `medicine_expire_days` instead.  
   :::  
   ::: field name="stone" type="number" optional default="0"  
   Maximum number of Originite Prime used.  
@@ -197,7 +202,7 @@ Currently supported stages for navigation include:
    "enable": true,
    "stage": "1-7",
    "medicine": 1,
-   "expiring_medicine": 0,
+   "medicine_expire_days": 2,
    "stone": 0,
    "times": 10,
    "series": 0,
@@ -259,7 +264,14 @@ Whether to use Expedited Plans.
 Number of expedites, only effective when `expedite` is true. By default unlimited (until `times` limit is reached).  
 :::  
 ::: field name="skip_robot" type="boolean" optional default="true"  
-Whether to skip when robot tag is recognized.  
+Deprecated and kept only for backward compatibility.  
+<br>
+When `preserve_tags` is absent and this value is `true`, MAA skips on `支援机械` only; `元素` is no longer treated as the legacy 1★ tag.  
+:::
+::: field name="preserve_tags" type="array<string>" optional  
+List of tag names that should preserve the current recruitment slot and skip this recruitment. Default is empty.  
+<br>
+If any specified tag is recognized, MAA will keep that slot untouched and skip the current recruitment.  
 :::  
 ::: field name="recruitment_time" type="object" optional  
 Tag ★ rarity (greater than or equal to 3) and corresponding desired recruitment time limit, in minutes, all default to 540 (i.e. 09:00:00).
@@ -300,7 +312,7 @@ Options: `CN` | `US` | `JP` | `KR`
    "set_time": true,
    "expedite": false,
    "expedite_times": 0,
-   "skip_robot": true,
+   "preserve_tags": ["支援机械"],
    "recruitment_time": {
       "3": 540,
       "4": 540
@@ -721,7 +733,7 @@ Whether to enable this task.
 ::: field name="filename" type="string"  
 Path to a single job JSON file, mutually exclusive with copilot_list (required, choose one); both relative and absolute paths are supported.  
 :::  
-::: field name="copilot_list" type="array<object>"  
+::: field name="copilot_list" type="array`<object>`"  
 List of jobs, mutually exclusive with filename (required, choose one); when both filename and copilot_list are present, copilot_list will be ignored; set_params can only be executed once when this parameter is in effect.
 <br>
 Each object contains:
@@ -747,7 +759,7 @@ Each object contains:
   <br>
   An integer between 0–4: 0 means the current formation, 1–4 refer to the 1st–4th formations.  
   :::  
-  ::: field name="user_additional" type="array<object>" optional default="[]"  
+  ::: field name="user_additional" type="array`<object>`" optional default="[]"  
   Custom additional operators list. Only effective when formation is true.
   <br>
   Each object contains:
@@ -911,32 +923,44 @@ Whether to enable this task.
 ::: field name="enable" type="boolean" optional default="true"  
 Whether to enable this task.  
 :::  
-::: field name="theme" type="string" optional default="Fire"  
+::: field name="theme" type="string" optional default="Tales"  
 Theme.
 <br>
-`Fire` - _Fire Within the Sand_
+`Fire` - _Fire Within the Sand_ (Closed)
 <br>
 `Tales` - _Tales Within the Sand_
+<br>
+`RelaunchAnchor` - _Relaunch Anchor_
 :::  
 ::: field name="mode" type="number" optional default="0"  
-Mode.
+Mode. Supported modes vary by theme:
 <br>
-`0` - Farm badges & construction pts (exiting the stage immediately).
+**Tales:**
 <br>
-`1` - Fire Within the Sand: Farm Crude Gold (forging Gold at headquarter after purchasing water); Tales Within the Sand: Automatically craft items and load to earn currency.
+`0` - No save, farm prosperity points by entering and exiting stages.
+<br>
+`1` - With save, farm currency by crafting support items.
+<br>
+**RelaunchAnchor:**
+<br>
+`16` (`RA1`) - RA-1, automatically execute intensive farming, construction, resource delivery, and settlement loop.
+<br>
+`32` (`RA15`) - RA-15, complete the 60-kill mission with Civilight Eterna.
+<br>
+`48` (`RA4`) - RA-4, Use the Gold from Strategy Planning Management to unlock areas, and use Wis'adel to complete the boss elimination mission.
 :::  
 ::: field name="tools_to_craft" type="array<string>" optional default="[&quot;荧光棒&quot;]"  
-Automatically crafted items. Suggested to fill in the substring.  
+Automatically crafted items. Suggested to fill in the substring. Only effective for Tales theme.  
 :::  
 ::: field name="increment_mode" type="number" optional default="0"  
-Click type.
+Click type. Only effective for Tales theme.
 <br>
 `0` - Rapid Click
 <br>
 `1` - Long Press
 :::  
 ::: field name="num_craft_batches" type="number" optional default="16"  
-Maximum number of craft batches per session.  
+Maximum number of craft batches per session. Only effective for Tales theme.  
 :::  
 ::::
 
@@ -1159,5 +1183,8 @@ Whether to enable AdbLite or not. Options: "0" | "1". Enum value: 4.
 :::  
 ::: field name="KillAdbOnExit" type="boolean" optional  
 Release Adb on exit. Options: "0" | "1". Enum value: 5.  
+:::  
+::: field name="ClientType" type="string" optional  
+Client channel. Most connection configs do not need this option. Set it before `AsstConnect` / `AsstAsyncConnect` only when the selected `config` uses `[PackageName]` in commands executed during connect. In the built-in configs, only `Androws` and `WSA` currently require it for `displayId` lookup. This does not replace the `client_type` task parameter used by StartUp / CloseDown tasks. Enum value: 6.  
 :::  
 ::::

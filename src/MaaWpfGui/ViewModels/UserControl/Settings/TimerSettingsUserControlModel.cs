@@ -15,6 +15,7 @@
 using System;
 using MaaWpfGui.Constants;
 using MaaWpfGui.Helper;
+using MaaWpfGui.Utilities;
 using Stylet;
 
 namespace MaaWpfGui.ViewModels.UserControl.Settings;
@@ -31,7 +32,7 @@ public class TimerSettingsUserControlModel : PropertyChangedBase
 
     public static TimerSettingsUserControlModel Instance { get; }
 
-    private bool _forceScheduledStart = Convert.ToBoolean(ConfigurationHelper.GetGlobalValue(ConfigurationKeys.ForceScheduledStart, bool.FalseString));
+    private bool _forceScheduledStart = ConfigurationHelper.GetGlobalValue(ConfigurationKeys.ForceScheduledStart, false);
 
     /// <summary>
     /// Gets or sets a value indicating whether to force scheduled start.
@@ -45,7 +46,7 @@ public class TimerSettingsUserControlModel : PropertyChangedBase
         }
     }
 
-    private bool _showWindowBeforeForceScheduledStart = Convert.ToBoolean(ConfigurationHelper.GetGlobalValue(ConfigurationKeys.ShowWindowBeforeForceScheduledStart, bool.FalseString));
+    private bool _showWindowBeforeForceScheduledStart = ConfigurationHelper.GetGlobalValue(ConfigurationKeys.ShowWindowBeforeForceScheduledStart, false);
 
     /// <summary>
     /// Gets or sets a value indicating whether show window before force scheduled start.
@@ -59,7 +60,7 @@ public class TimerSettingsUserControlModel : PropertyChangedBase
         }
     }
 
-    private bool _customConfig = Convert.ToBoolean(ConfigurationHelper.GetGlobalValue(ConfigurationKeys.CustomConfig, bool.FalseString));
+    private bool _customConfig = ConfigurationHelper.GetGlobalValue(ConfigurationKeys.CustomConfig, false);
 
     /// <summary>
     /// Gets or sets a value indicating whether to use custom config.
@@ -81,6 +82,7 @@ public class TimerSettingsUserControlModel : PropertyChangedBase
         {
             public TimerProperties(int timeId, bool? isOn, int hour, int min, string? timerConfig)
             {
+                PropertyDependsOnUtility.InitializePropertyDependencies(this);
                 TimerId = timeId;
                 _isOn = isOn;
                 _hour = hour;
@@ -97,8 +99,9 @@ public class TimerSettingsUserControlModel : PropertyChangedBase
 
             public int TimerId { get; set; }
 
-            private readonly string _timerName = LocalizationHelper.GetString("Timer");
+            private static string _timerName => LocalizationHelper.GetString("Timer");
 
+            [PropertyDependsOn(typeof(GuiSettingsUserControlModel), nameof(GuiSettingsUserControlModel.Language))]
             public string TimerName => $"{_timerName} {TimerId + 1}";
 
             private bool? _isOn;

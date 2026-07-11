@@ -1,7 +1,9 @@
 #include "AdbController.h"
 
 #include "Assistant.h"
+#include "Controller.h"
 #include "MaaUtils/NoWarningCV.hpp"
+#include <cmath>
 #include <cstdint>
 #include <numeric>
 
@@ -47,6 +49,10 @@ asst::AdbController::~AdbController()
     LogTraceFunction;
 
     m_inited = false;
+    // 等待异步帧率检测结束，避免线程访问已析构的 this
+    if (m_fps_future.valid()) {
+        m_fps_future.wait();
+    }
     release();
 }
 
@@ -194,25 +200,56 @@ void asst::AdbController::callback(AsstMsg msg, const json::value& details)
     }
 }
 
-int asst::AdbController::get_mumu_index(const std::string& address)
+std::optional<int> asst::AdbController::get_mumu_index(const std::string& address)
 {
     LogTrace << VAR(address);
+
+    // 新版 MuMu 支持 emulator-xxxx 格式的设备号（如 emulator-5554），
+    // 实例索引 = (port - 5554) / 2
+    if (address.starts_with("emulator-")) {
+        constexpr int base_emulator_port = 5554;
+        std::string_view port_sv = std::string_view(address).substr(9); // after "emulator-"
+        int port = 0;
+        if (!utils::chars_to_number<int, true>(port_sv, port)) {
+            Log.error("emulator port is invalid", port_sv);
+            return std::nullopt;
+        }
+        // emulator 控制台端口从 5554 起步进 2（5554, 5556, ...），
+        // 奇数端口是 adb 端口而非控制台端口，不在 emulator-xxxx 格式中出现
+        if (port < base_emulator_port || (port - base_emulator_port) % 2 != 0) {
+            Log.error("emulator port is out of range or not aligned", port);
+            return std::nullopt;
+        }
+        int mumu_index = (port - base_emulator_port) / 2;
+        LogInfo << VAR(port_sv) << VAR(port) << VAR(mumu_index);
+        return mumu_index;
+    }
 
     auto pos = address.find(":");
     if (pos == std::string::npos) {
         Log.error("address is invalid", address);
-        return 0;
+        return std::nullopt;
     }
 
     std::string port_str = address.substr(pos + 1);
     if (port_str.empty() || !std::ranges::all_of(port_str, [](const char& c) -> bool { return std::isdigit(c); })) {
         Log.error("port is invalid", port_str);
-        return 0;
+        return std::nullopt;
     }
     int port = std::stoi(port_str);
     int mumu_index = 0;
     if (port >= 16384) {
-        mumu_index = (port - 16384) / 32;
+        // port = 16384 + (index % 32) * 32 + ((offset + floor(index/32) * 4) % 32)
+        // 设 i = (index % 32) 是 0~31
+        // 不考虑 index 超过 256 的情况，设 j = floor(index/32)，只能是 0~7
+        // 于是 j * 4 的取值范围是 0, 4, 8, ..., 28，全部小于 32，所以取模后就是它本身
+        // offset 的取整为 0~31，但只有端口被占用时才会增加，所以不影响正常情况下的连续性
+        // 所以公式简化为：
+        //     port = 16384 + (index % 32) * 32 + floor(index/32) * 4 = 16384 + i * 32 + j * 4
+        // 设 k = (port - 16384) / 4，则 k = i * 8 + j
+        // index = j * 32 + i = (k & 7) * 32 + (k >> 3) = ((k & 7) << 5) + (k >> 3)
+        int k = (port - 16384) / 4;
+        mumu_index = ((k & 7) << 5) | (k >> 3);
     }
     else if (port == 7555) {
         mumu_index = 0;
@@ -220,6 +257,10 @@ int asst::AdbController::get_mumu_index(const std::string& address)
     }
     else if (port >= 5555) {
         mumu_index = (port - 5555) / 2;
+    }
+    else {
+        Log.error("port is not in a valid MuMu range", port);
+        return std::nullopt;
     }
     LogInfo << VAR(port_str) << VAR(port) << VAR(mumu_index);
     return mumu_index;
@@ -245,7 +286,12 @@ void asst::AdbController::init_mumu_extras(const AdbCfg& adb_cfg, const std::str
         m_mumu_extras.init(mumu_path, adb_cfg.extras.get("index", 0));
     }
     else {
-        m_mumu_extras.init(mumu_path, get_mumu_index(address));
+        auto mumu_index = get_mumu_index(address);
+        if (!mumu_index) {
+            LogError << "Failed to parse MuMu index from address, skip MumuExtras init" << VAR(address);
+            return;
+        }
+        m_mumu_extras.init(mumu_path, mumu_index.value());
     }
 #endif
 }
@@ -261,21 +307,27 @@ void asst::AdbController::set_mumu_package(const std::string& client_type)
 #endif
 }
 
-int asst::AdbController::get_ld_index(const std::string& address)
+std::optional<int> asst::AdbController::get_ld_index(const std::string& address)
 {
     LogTrace << VAR(address);
 
     // emulator-5554
     if (address.starts_with("emulator-")) {
         constexpr int base_emulator_port = 5554;
-        std::string port_str = address.substr(9); // after "emulator-"
-        if (port_str.empty() || !std::ranges::all_of(port_str, [](char c) { return std::isdigit(c); })) {
-            Log.error("emulator port is invalid", port_str);
-            return 0;
+        std::string_view port_sv = std::string_view(address).substr(9); // after "emulator-"
+        int port = 0;
+        if (!utils::chars_to_number<int, true>(port_sv, port)) {
+            Log.error("emulator port is invalid", port_sv);
+            return std::nullopt;
         }
-        int port = std::stoi(port_str);
+        // emulator 控制台端口从 5554 起步进 2（5554, 5556, ...），
+        // 奇数端口是 adb 端口而非控制台端口，不在 emulator-xxxx 格式中出现
+        if (port < base_emulator_port || (port - base_emulator_port) % 2 != 0) {
+            Log.error("emulator port is out of range or not aligned", port);
+            return std::nullopt;
+        }
         int index = (port - base_emulator_port) / 2;
-        LogInfo << VAR(port_str) << VAR(port) << VAR(index);
+        LogInfo << VAR(port_sv) << VAR(port) << VAR(index);
         return index;
     }
 
@@ -286,7 +338,7 @@ int asst::AdbController::get_ld_index(const std::string& address)
         std::string port_str = address.substr(pos + 1);
         if (port_str.empty() || !std::ranges::all_of(port_str, [](char c) { return std::isdigit(c); })) {
             Log.error("adb port is invalid", port_str);
-            return 0;
+            return std::nullopt;
         }
         int port = std::stoi(port_str);
         int index = (port - base_adb_port) / 2;
@@ -295,7 +347,7 @@ int asst::AdbController::get_ld_index(const std::string& address)
     }
 
     Log.error("address is invalid or unsupported", address);
-    return 0;
+    return std::nullopt;
 }
 
 void asst::AdbController::init_ld_extras(const AdbCfg& adb_cfg, const std::string& address)
@@ -316,7 +368,12 @@ void asst::AdbController::init_ld_extras(const AdbCfg& adb_cfg, const std::strin
         ld_index = adb_cfg.extras.get("index", 0);
     }
     else {
-        ld_index = get_ld_index(address);
+        auto ld_index_opt = get_ld_index(address);
+        if (!ld_index_opt) {
+            LogError << "Failed to parse LD index from address, skip LDExtras init" << VAR(address);
+            return;
+        }
+        ld_index = ld_index_opt.value();
     }
     int ld_pid = adb_cfg.extras.get("pid", 0);
     m_ld_extras.init(ld_path, ld_index, ld_pid, m_width, m_height);
@@ -336,11 +393,16 @@ std::optional<unsigned short> asst::AdbController::init_socket(const std::string
 void asst::AdbController::clear_info() noexcept
 {
     m_inited = false;
+    // 等待可能仍在执行的异步帧率检测
+    if (m_fps_future.valid()) {
+        m_fps_future.wait();
+    }
     m_adb = decltype(m_adb)();
     m_uuid.clear();
     m_width = 0;
     m_height = 0;
     m_screen_size = { 0, 0 };
+    m_last_fps_check_time = {}; // 重置帧率检测计时，重连后立即检测一次
 }
 
 bool asst::AdbController::inited() const noexcept
@@ -776,6 +838,10 @@ bool asst::AdbController::screencap(cv::Mat& image_payload, bool allow_reconnect
             }
             callback(AsstMsg::ConnectionInfo, info);
         }
+
+        // 每 1 分钟检测一次模拟器帧率
+        check_fps();
+
         return screencap_ret;
     }
 }
@@ -867,6 +933,9 @@ bool asst::AdbController::connect(const std::string& adb_path, const std::string
         };
     };
 
+    std::string client_type = ctrler() ? ctrler()->get_client_type() : "";
+    m_conn_ctx.reset(adb_path, address, client_type);
+
     auto adb_ret = Config.get_adb_cfg(config);
     if (!adb_ret) {
         json::value info = get_info_json() | json::object {
@@ -882,23 +951,8 @@ bool asst::AdbController::connect(const std::string& adb_path, const std::string
 #endif
     }
 
-    const auto& adb_cfg = adb_ret.value();
-    std::string display_id;
-    std::string nc_address = "10.0.2.2";
-    uint16_t nc_port = 0;
-
-    // 里面的值每次执行命令后可能更新，所以要用 lambda 拿最新的
-    auto cmd_replace = [&](const std::string& cfg_cmd) -> std::string {
-        return utils::string_replace_all(
-            cfg_cmd,
-            {
-                { "[Adb]", adb_path },
-                { "[AdbSerial]", address },
-                { "[DisplayId]", display_id },
-                { "[NcPort]", std::to_string(nc_port) },
-                { "[NcAddress]", nc_address },
-            });
-    };
+    m_conn_ctx.adb_cfg = adb_ret.value();
+    const auto& adb_cfg = m_conn_ctx.adb_cfg;
 
     if (need_exit()) {
         return false;
@@ -907,8 +961,8 @@ bool asst::AdbController::connect(const std::string& adb_path, const std::string
     /* connect */
     {
         // 先用 devices 读取输出
-        m_adb.devices = cmd_replace(adb_cfg.devices);
-        m_adb.address_regex = cmd_replace(adb_cfg.address_regex);
+        m_adb.devices = m_conn_ctx.replace_cmd(adb_cfg.devices);
+        m_adb.address_regex = m_conn_ctx.replace_cmd(adb_cfg.address_regex);
         auto devices_ret = call_command(m_adb.devices, 60LL * 1000, false);
         bool need_connect = true;
         if (devices_ret) {
@@ -923,38 +977,42 @@ bool asst::AdbController::connect(const std::string& adb_path, const std::string
             }
         }
 
-        // 如果不包含 `:` 且需要连接，connect 命令也不会成功
-        if (address.find(':') == std::string::npos && need_connect) {
-            json::value info = get_info_json() | json::object {
-                { "what", "ConnectFailed" },
-                { "why", "Address does not contain ':' and no devices found" },
-            };
-            callback(AsstMsg::ConnectionInfo, info);
-            return false;
-        }
-
-        // TODO: adb lite server 尚未实现，第一次连接需要执行一次 adb.exe 启动 daemon
-        m_adb.connect = cmd_replace(adb_cfg.connect);
-        m_adb.release = cmd_replace(adb_cfg.release);
-        auto connect_ret = call_command(m_adb.connect, 60LL * 1000, false /* adb 连接时不允许重试 */);
-        bool is_connect_success = false;
-        if (connect_ret) {
-            auto& connect_str = connect_ret.value();
-            // 检查连接字符串是否包含 "connected"
-            is_connect_success = connect_str.find("connected") != std::string::npos;
-            // NOTE:这玩意啥都没干，有什么用吗？
-            if (connect_str.find("daemon started successfully") != std::string::npos &&
-                connect_str.find("daemon still not running") == std::string::npos) {
+        // 设置配置 connect、release 命令，即使这里不连接，后续也会需要用到
+        m_adb.connect = m_conn_ctx.replace_cmd(adb_cfg.connect);
+        m_adb.release = m_conn_ctx.replace_cmd(adb_cfg.release);
+        m_platform_io->set_adb_serial(address);
+        if (need_connect) {
+            // 如果不包含 `:` 且需要连接，connect 命令也不会成功
+            if (address.find(':') == std::string::npos) {
+                json::value info = get_info_json() | json::object {
+                    { "what", "ConnectFailed" },
+                    { "why", "Cannot connect: address appears to be serial number but device not found" },
+                };
+                callback(AsstMsg::ConnectionInfo, info);
+                return false;
             }
-        }
 
-        if (!is_connect_success && need_connect) {
-            json::value info = get_info_json() | json::object {
-                { "what", "ConnectFailed" },
-                { "why", "Connection command failed to exec" },
-            };
-            callback(AsstMsg::ConnectionInfo, info);
-            return false;
+            auto connect_ret = call_command(m_adb.connect, 60LL * 1000, false /* adb 连接时不允许重试 */);
+            if (connect_ret) {
+                auto& connect_str = connect_ret.value();
+                // 检查连接字符串是否包含 "connected"
+                if (connect_str.find("connected") == std::string::npos) {
+                    json::value info = get_info_json() | json::object {
+                        { "what", "ConnectFailed" },
+                        { "why", "Connection command did not report \"connected\"" },
+                    };
+                    callback(AsstMsg::ConnectionInfo, info);
+                    return false;
+                }
+            }
+            else {
+                json::value info = get_info_json() | json::object {
+                    { "what", "ConnectFailed" },
+                    { "why", "Connection command failed to exec" },
+                };
+                callback(AsstMsg::ConnectionInfo, info);
+                return false;
+            }
         }
     }
 
@@ -964,7 +1022,7 @@ bool asst::AdbController::connect(const std::string& adb_path, const std::string
 
     /* get uuid (imei) */
     {
-        auto uuid_ret = call_command(cmd_replace(adb_cfg.uuid), 20000, false /* adb 连接时不允许重试 */);
+        auto uuid_ret = call_command(m_conn_ctx.replace_cmd(adb_cfg.uuid), 20000, false /* adb 连接时不允许重试 */);
         if (!uuid_ret) {
             json::value info = get_info_json() | json::object {
                 { "what", "ConnectFailed" },
@@ -1000,7 +1058,7 @@ bool asst::AdbController::connect(const std::string& adb_path, const std::string
     }
     /* get android version */
     {
-        auto version_ret = call_command(cmd_replace(adb_cfg.version));
+        auto version_ret = call_command(m_conn_ctx.replace_cmd(adb_cfg.version));
         if (!version_ret) {
             json::value info = get_info_json() | json::object {
                 { "what", "ConnectFailed" },
@@ -1037,7 +1095,15 @@ bool asst::AdbController::connect(const std::string& adb_path, const std::string
 
     // 按需获取display ID 信息
     if (!adb_cfg.display_id.empty()) {
-        auto display_id_ret = call_command(cmd_replace(adb_cfg.display_id));
+        // [PackageName] 不参与 replace_cmd 的统一替换（保留为运行时参数）。
+        // 只有 connect 阶段命令确实依赖包名的配置，才需要在连接前调用
+        // AsstSetInstanceOption(ClientType, ...)。当前内置配置仅 Androws / WSA 的
+        // displayId 查询走这里，因此其他连接配置不应被迫传入 client type。
+        auto display_id_cmd = utils::string_replace_all(
+            m_conn_ctx.replace_cmd(adb_cfg.display_id),
+            "[PackageName]",
+            m_conn_ctx.package_name);
+        auto display_id_ret = call_command(display_id_cmd);
         if (!display_id_ret) {
             return false;
         }
@@ -1049,9 +1115,35 @@ bool asst::AdbController::connect(const std::string& adb_path, const std::string
             return false;
         }
 
-        display_id = display_id_pipe_str.substr(last + 1);
+        m_conn_ctx.display_id = display_id_pipe_str.substr(last + 1);
         // 去掉换行
-        display_id.pop_back();
+        m_conn_ctx.display_id.pop_back();
+    }
+
+    if (need_exit()) {
+        return false;
+    }
+
+    // 按需获取 event ID 信息（用于 minitouch 的 /dev/input/eventN）
+    if (!adb_cfg.event_id.empty()) {
+        auto event_id_ret = call_command(m_conn_ctx.replace_cmd(adb_cfg.event_id));
+        if (!event_id_ret) {
+            Log.warn("Failed to get event_id, skip");
+        }
+        else {
+            auto& event_id_pipe_str = event_id_ret.value();
+            convert_lf(event_id_pipe_str);
+            // 去掉空白字符
+            std::erase_if(event_id_pipe_str, [](char c) { return !std::isdigit(c); });
+
+            if (event_id_pipe_str.empty()) {
+                Log.warn("event_id is empty, skip");
+            }
+            else {
+                m_conn_ctx.event_id = event_id_pipe_str;
+                Log.info("event_id:", m_conn_ctx.event_id);
+            }
+        }
     }
 
     if (need_exit()) {
@@ -1060,7 +1152,7 @@ bool asst::AdbController::connect(const std::string& adb_path, const std::string
 
     /* display */
     {
-        auto display_ret = call_command(cmd_replace(adb_cfg.display));
+        auto display_ret = call_command(m_conn_ctx.replace_cmd(adb_cfg.display));
         if (!display_ret) {
             json::value info = get_info_json() | json::object {
                 { "what", "ConnectFailed" },
@@ -1110,15 +1202,16 @@ bool asst::AdbController::connect(const std::string& adb_path, const std::string
         callback(AsstMsg::ConnectionInfo, info);
     }
 
-    m_adb.click = cmd_replace(adb_cfg.click);
-    m_adb.input = cmd_replace(adb_cfg.input);
-    m_adb.swipe = cmd_replace(adb_cfg.swipe);
-    m_adb.press_esc = cmd_replace(adb_cfg.press_esc);
-    m_adb.screencap_raw_with_gzip = cmd_replace(adb_cfg.screencap_raw_with_gzip);
-    m_adb.screencap_encode = cmd_replace(adb_cfg.screencap_encode);
-    m_adb.start = cmd_replace(adb_cfg.start);
-    m_adb.stop = cmd_replace(adb_cfg.stop);
-    m_adb.back_to_home = cmd_replace(adb_cfg.back_to_home);
+    m_adb.click = m_conn_ctx.replace_cmd(adb_cfg.click);
+    m_adb.input = m_conn_ctx.replace_cmd(adb_cfg.input);
+    m_adb.swipe = m_conn_ctx.replace_cmd(adb_cfg.swipe);
+    m_adb.press_esc = m_conn_ctx.replace_cmd(adb_cfg.press_esc);
+    m_adb.screencap_raw_with_gzip = m_conn_ctx.replace_cmd(adb_cfg.screencap_raw_with_gzip);
+    m_adb.screencap_encode = m_conn_ctx.replace_cmd(adb_cfg.screencap_encode);
+    m_adb.start = m_conn_ctx.replace_cmd(adb_cfg.start);
+    m_adb.stop = m_conn_ctx.replace_cmd(adb_cfg.stop);
+    m_adb.back_to_home = m_conn_ctx.replace_cmd(adb_cfg.back_to_home);
+    m_adb.fps = m_conn_ctx.replace_cmd(adb_cfg.fps);
 
     if (m_support_socket && !m_server_started) {
         std::string bind_address;
@@ -1131,18 +1224,18 @@ bool asst::AdbController::connect(const std::string& adb_path, const std::string
 
         // reference from
         // https://github.com/ArknightsAutoHelper/ArknightsAutoHelper/blob/master/automator/connector/ADBConnector.py#L436
-        auto nc_address_ret = call_command(cmd_replace(adb_cfg.nc_address));
+        auto nc_address_ret = call_command(m_conn_ctx.replace_cmd(adb_cfg.nc_address));
         if (nc_address_ret && !m_server_started) {
             auto& nc_result_str = nc_address_ret.value();
             if (auto pos = nc_result_str.find(' '); pos != std::string::npos) {
-                nc_address = nc_result_str.substr(0, pos);
+                m_conn_ctx.nc_address = nc_result_str.substr(0, pos);
             }
         }
 
         auto socket_opt = init_socket(bind_address);
         if (socket_opt) {
-            nc_port = socket_opt.value();
-            m_adb.screencap_raw_by_nc = cmd_replace(adb_cfg.screencap_raw_by_nc);
+            m_conn_ctx.nc_port = socket_opt.value();
+            m_adb.screencap_raw_by_nc = m_conn_ctx.replace_cmd(adb_cfg.screencap_raw_by_nc);
             m_server_started = true;
         }
         else {
@@ -1160,7 +1253,6 @@ bool asst::AdbController::connect(const std::string& adb_path, const std::string
     else if (config == "LDPlayer") {
         init_ld_extras(adb_cfg, address);
     }
-
     if (need_exit()) {
         return false;
     }
@@ -1176,6 +1268,85 @@ void asst::AdbController::set_kill_adb_on_exit(bool enable) noexcept
 void asst::AdbController::clear_lf_info()
 {
     m_adb.screencap_end_of_line = AdbProperty::ScreencapEndOfLine::UnknownYet;
+}
+
+void asst::AdbController::check_fps()
+{
+    // 命令未配置或尚未连接，跳过
+    if (m_adb.fps.empty()) {
+        return;
+    }
+
+    // 上一次异步检测尚未完成，跳过（避免堆积）
+    if (m_fps_future.valid() && m_fps_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready) {
+        return;
+    }
+
+    // 每 1 分钟检测一次
+    constexpr auto FpsCheckInterval = std::chrono::minutes(1);
+    auto now = std::chrono::steady_clock::now();
+    if (m_last_fps_check_time.time_since_epoch().count() != 0 && now - m_last_fps_check_time < FpsCheckInterval) {
+        return;
+    }
+    m_last_fps_check_time = now;
+
+    // 异步执行，避免 adb 延迟阻塞截图返回
+    // 值捕获易变数据（m_uuid / m_adb.fps），防止 clear_info() 清空后异步线程读到悬空数据；
+    // call_command / callback 依赖的 mutex、platform_io、callback 等均为构造后不变，
+    // 生命周期由 ~AdbController 和 clear_info() 中的 m_fps_future.wait() 保证安全
+    m_fps_future = std::async(std::launch::async, [this, cmd = m_adb.fps, uuid = m_uuid]() {
+        if (need_exit()) {
+            return;
+        }
+
+        // 放宽到 5 秒：异步执行后不再阻塞截图，可给 adb 足够时间
+        auto ret = call_command(cmd, 5000, false);
+        if (!ret || ret.value().empty()) {
+            Log.warn("fps command failed or empty");
+            return;
+        }
+
+        // SurfaceFlinger --latency 第一行是每帧刷新周期（纳秒），例如 16666666 表示 60 FPS
+        // 注意：这里检测的是模拟器/系统的设置刷新率，而非游戏实际运行帧率。
+        auto output = std::move(ret.value());
+        convert_lf(output);
+        auto newline_pos = output.find('\n');
+        std::string first_line = newline_pos == std::string::npos ? output : output.substr(0, newline_pos);
+
+        // 去掉空白和非数字字符
+        std::erase_if(first_line, [](char c) { return !std::isdigit(static_cast<unsigned char>(c)); });
+
+        if (first_line.empty()) {
+            Log.warn("fps output is empty after sanitize");
+            return;
+        }
+
+        long long refresh_period_ns = 0;
+        if (!utils::chars_to_number<long long, true>(first_line, refresh_period_ns)) {
+            Log.warn("fps output parse failed:", first_line);
+            return;
+        }
+
+        if (refresh_period_ns <= 0) {
+            Log.warn("invalid refresh period:", refresh_period_ns);
+            return;
+        }
+
+        // ns -> FPS
+        double fps = 1000000000.0 / static_cast<double>(refresh_period_ns);
+        int fps_int = static_cast<int>(std::round(fps));
+
+        json::value info = json::object {
+            { "uuid", uuid },
+            { "what", "EmulatorFPS" },
+            { "details",
+              json::object {
+                  { "fps", fps_int },
+                  { "refresh_period_ns", refresh_period_ns },
+              } },
+        };
+        callback(AsstMsg::ConnectionInfo, info);
+    });
 }
 
 void asst::AdbController::back_to_home() noexcept

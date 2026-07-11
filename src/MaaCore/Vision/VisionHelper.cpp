@@ -64,12 +64,12 @@ Rect asst::VisionHelper::correct_rect(const Rect& rect, const Rect& main_roi)
         res.height = rect.height + rect.y;
     }
     if (res.x < main_roi.x) {
-        res.x = main_roi.x;
         res.width = res.width - (main_roi.x - res.x);
+        res.x = main_roi.x;
     }
     if (res.y < main_roi.y) {
-        res.y = main_roi.y;
         res.height = res.height - (main_roi.y - res.y);
+        res.y = main_roi.y;
     }
     if (res.x + res.width > main_roi.x + main_roi.width) {
         res.width = main_roi.x + main_roi.width - res.x;
@@ -86,13 +86,17 @@ Rect VisionHelper::correct_rect(const Rect& rect, const cv::Mat& image)
         Log.error(__FUNCTION__, "image is empty");
         return rect;
     }
-    if (rect.empty()) {
+    if (rect.x == 0 && rect.y == 0 && rect.width == 0 && rect.height == 0) {
         LogWarn << __FUNCTION__ << "roi is empty, use whole image";
         return { 0, 0, image.cols, image.rows };
     }
+    else if (rect.empty()) {
+        Log.warn(__FUNCTION__, "roi is empty");
+        return rect;
+    }
     if (rect.x >= image.cols || rect.y >= image.rows) {
         Log.error(__FUNCTION__, "roi is out of range", image.cols, image.rows, rect.to_string());
-        return rect;
+        return { 1, 1, 0, 0 }; // 临时修复, 后续需调整默认rect的行为
     }
 
     Rect res = rect;
@@ -106,8 +110,13 @@ Rect VisionHelper::correct_rect(const Rect& rect, const cv::Mat& image)
     }
     res.x = std::clamp(res.x, 0, image.cols - 1);
     res.y = std::clamp(res.y, 0, image.rows - 1);
-    res.width = std::clamp(res.width, 1, image.cols - res.x);
-    res.height = std::clamp(res.height, 1, image.rows - res.y);
+    res.width = std::clamp(res.width, 0, image.cols - res.x);
+    res.height = std::clamp(res.height, 0, image.rows - res.y);
+
+    if (res.empty()) {
+        Log.warn(__FUNCTION__, "roi is empty after correction");
+        return { 1, 1, 0, 0 }; // 临时修复, 后续需调整默认rect的行为
+    }
 
     if (res != rect) {
         Log.warn(__FUNCTION__, "roi is out of range", image.cols, image.rows, rect.to_string(), "clamped");

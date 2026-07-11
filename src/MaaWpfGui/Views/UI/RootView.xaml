@@ -16,8 +16,11 @@
     Height="600"
     MinWidth="800"
     MinHeight="600"
+    AllowDrop="True"
     d:DataContext="{d:DesignInstance {x:Type ui_vms:RootViewModel}}"
     Icon="../../newlogo.ico"
+    PreviewDragOver="{s:Action ManualPackagePreviewDragOver}"
+    PreviewDrop="{s:Action ManualPackageDrop}"
     ShowCloseButton="{Binding ShowCloseButton}"
     ShowTitle="False"
     Topmost="{Binding IsWindowTopMost}"
@@ -196,7 +199,7 @@
                     d:Height="200"
                     d:Width="100"
                     VerticalScrollBarVisibility="Hidden">
-                    <StackPanel Margin="0,0,0,5" hc:Growl.GrowlParent="True" />
+                    <StackPanel x:Name="AchievementGrowlPanel" Margin="0,0,0,5" hc:Growl.GrowlParent="True" />
                 </ScrollViewer>
                 <hc:GifImage
                     Width="100"

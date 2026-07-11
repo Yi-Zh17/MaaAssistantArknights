@@ -20,7 +20,9 @@
             "TaskJieGarden",
             "TaskAveMujica",
             "TaskTogether",
-            "TaskLoneTrail"
+            "TaskLoneTrail",
+            "TaskReconstruct",
+            "TaskHunting"
         ],
         "onErrorNext": ["Task-Entry@SwitchTheme@ToggleSettingsMenu"]
     },
@@ -85,5 +87,14 @@
     "TaskLoneTrail": {
         "baseTask": "TaskDefault",
         "template": ["LoneTrail/Day/Task.png", "LoneTrail/Night/Task.png"]
+    },
+    "TaskReconstruct": {
+        "baseTask": "TaskDefault",
+        "template": "Reconstruct/Task.png"
+    },
+    "TaskHunting": {
+        "baseTask": "TaskDefault",
+        "template": "Hunting/Task.png",
+        "roi": [685, 548, 151, 131]
     }
 }

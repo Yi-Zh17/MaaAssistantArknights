@@ -25,6 +25,7 @@ using HandyControl.Data;
 using MaaWpfGui.Constants.Enums;
 using MaaWpfGui.Helper;
 using MaaWpfGui.Models;
+using MaaWpfGui.Models.MaaApi;
 using MaaWpfGui.ViewModels.UI;
 using MaaWpfGui.ViewModels.UserControl.Settings;
 using Newtonsoft.Json.Linq;
@@ -47,8 +48,50 @@ public class StageManager
     // data
     private Dictionary<string, StageInfo> _stages = [];
 
+    /// <summary>
+    /// 刷新关卡列表的本地化文本。
+    /// </summary>
+    private void RefreshStageLocalization()
+    {
+        foreach (var stage in _stages.Values)
+        {
+            if (!string.IsNullOrEmpty(stage.DisplayKey))
+            {
+                stage.Display = LocalizationHelper.GetString(stage.DisplayKey);
+            }
+
+            if (string.IsNullOrEmpty(stage.Value))
+            {
+                stage.Display = LocalizationHelper.GetString("DefaultStage");
+            }
+
+            if (!string.IsNullOrEmpty(stage.TipKey))
+            {
+                stage.Tip = LocalizationHelper.GetString(stage.TipKey);
+            }
+        }
+    }
+
+    private Dictionary<string, SideStoryActivity> _activityList = [];
+
+    public IReadOnlyDictionary<string, SideStoryActivity> ActivityList => _activityList.AsReadOnly();
+
     // mini game entries exposed from StageActivityV2 (richer model including Tip/TipKey)
     private List<MiniGameEntry> _miniGameEntries = InitializeDefaultMiniGameEntries();
+
+    /// <summary>
+    /// 刷新小游戏条目的本地化文本。
+    /// </summary>
+    private void RefreshMiniGameLocalization()
+    {
+        foreach (var entry in _miniGameEntries)
+        {
+            if (!string.IsNullOrEmpty(entry.DisplayKey))
+            {
+                entry.Display = LocalizationHelper.GetString(entry.DisplayKey);
+            }
+        }
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StageManager"/> class.
@@ -56,6 +99,7 @@ public class StageManager
     public StageManager()
     {
         UpdateStageLocal();
+        LocalizationHelper.LanguageChanged += RefreshLocalization;
     }
 
     /// <summary>
@@ -118,18 +162,10 @@ public class StageManager
         });
     }
 
-    private static string GetClientType()
-    {
-        var clientType = SettingsViewModel.GameSettings.ClientType;
-
-        // 官服和B服使用同样的资源
-        if (clientType is ClientType.Bilibili)
-        {
-            clientType = ClientType.Official;
-        }
-
-        return clientType;
-    }
+    private static string GetClientType() => SettingsViewModel.GameSettings.ClientType switch {
+        ClientType.Bilibili => ClientType.Official,
+        _ => SettingsViewModel.GameSettings.ClientType,
+    };
 
     private static JObject? LoadLocalStages()
     {
@@ -243,24 +279,33 @@ public class StageManager
     {
         return new()
         {
-            // 「当前/上次」关卡导航
+            // ｢当前/上次｣ 关卡导航
             { string.Empty, new() { Display = LocalizationHelper.GetString("DefaultStage"), Value = string.Empty } },
 
             // 周一和周日的关卡提示
-            { "Pormpt1", new() { Tip = LocalizationHelper.GetString("Pormpt1"), OpenDaysOfWeek = [DayOfWeek.Monday], IsHidden = true } },
-            { "Pormpt2", new() { Tip = LocalizationHelper.GetString("Pormpt2"), OpenDaysOfWeek = [DayOfWeek.Sunday], IsHidden = true } },
+            { "Pormpt1", new() { TipKey = "Pormpt1", OpenDaysOfWeek = [DayOfWeek.Monday], IsHidden = true } },
+            { "Pormpt2", new() { TipKey = "Pormpt2", OpenDaysOfWeek = [DayOfWeek.Sunday], IsHidden = true } },
         };
+    }
+
+    /// <summary>
+    /// 刷新构造时缓存的本地化列表文本。
+    /// </summary>
+    private void RefreshLocalization()
+    {
+        RefreshStageLocalization();
+        RefreshMiniGameLocalization();
     }
 
     private static List<MiniGameEntry> InitializeDefaultMiniGameEntries()
     {
         var entries = new List<MiniGameEntry>
         {
-            new() { Display = LocalizationHelper.GetString("MiniGameNameSsStore"), Value = "SS@Store@Begin", TipKey = "MiniGameNameSsStoreTip" },
-            new() { Display = LocalizationHelper.GetString("MiniGameNameGreenTicketStore"), Value = "GreenTicket@Store@Begin", TipKey = "MiniGameNameGreenTicketStoreTip" },
-            new() { Display = LocalizationHelper.GetString("MiniGameNameYellowTicketStore"), Value = "YellowTicket@Store@Begin", TipKey = "MiniGameNameYellowTicketStoreTip" },
-            new() { Display = LocalizationHelper.GetString("MiniGameNameRAStore"), Value = "RA@Store@Begin", TipKey = "MiniGameNameRAStoreTip" },
-            new() { Display = LocalizationHelper.GetString("MiniGame@SecretFront"), Value = "MiniGame@SecretFront", TipKey = "MiniGame@SecretFrontTip" },
+            new() { Display = LocalizationHelper.GetString("MiniGameNameSsStore"), DisplayKey = "MiniGameNameSsStore", Value = "SS@Store@Begin", TipKey = "MiniGameNameSsStoreTip" },
+            new() { Display = LocalizationHelper.GetString("MiniGameNameGreenTicketStore"), DisplayKey = "MiniGameNameGreenTicketStore", Value = "GreenTicket@Store@Begin", TipKey = "MiniGameNameGreenTicketStoreTip" },
+            new() { Display = LocalizationHelper.GetString("MiniGameNameYellowTicketStore"), DisplayKey = "MiniGameNameYellowTicketStore", Value = "YellowTicket@Store@Begin", TipKey = "MiniGameNameYellowTicketStoreTip" },
+            new() { Display = LocalizationHelper.GetString("MiniGameNameRAStore"), DisplayKey = "MiniGameNameRAStore", Value = "RA@Store@Begin", TipKey = "MiniGameNameRAStoreTip" },
+            new() { Display = LocalizationHelper.GetString("MiniGame@SecretFront"), DisplayKey = "MiniGame@SecretFront", Value = "MiniGame@SecretFront", TipKey = "MiniGame@SecretFrontTip" },
         };
 
         return entries;
@@ -395,7 +440,7 @@ public class StageManager
         };
     }
 
-    private static void ParseActivityStages(JToken? clientData, Dictionary<string, StageInfo> tempStage, bool curVerParsed, SemVersion? curVersionObj, bool isDebugVersion)
+    private void ParseActivityStages(JToken? clientData, Dictionary<string, StageInfo> tempStage, bool curVerParsed, SemVersion? curVersionObj, bool isDebugVersion)
     {
         try
         {
@@ -404,6 +449,9 @@ public class StageManager
             {
                 return;
             }
+
+            // 后面的带了奇怪的最低版本二次兼容 和 大小写兼容, 暂时不改
+            _activityList = sideToken.ToObject<Dictionary<string, SideStoryActivity>>() ?? [];
 
             // 新格式：sideStoryStage 为对象，按活动分组，组内包含 Activity 与 Stages 数组
             foreach (var prop in sideToken.Children<JProperty>())
@@ -598,7 +646,7 @@ public class StageManager
             { "SK-5", new("SK-5", "SKTip", [DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday, DayOfWeek.Saturday], resourceCollection) },
 
             // 剿灭模式
-            { "Annihilation", new() { Display = LocalizationHelper.GetString("AnnihilationMode"), Value = "Annihilation" } },
+            { "Annihilation", new() { Display = LocalizationHelper.GetString("AnnihilationMode"), DisplayKey = "AnnihilationMode", Value = "Annihilation" } },
 
             // 芯片本 - dropGroups 格式：[[PR-X-1的掉落], [PR-X-2的掉落]]
             { "PR-A-1", new("PR-A-1", "PR-ATip", [DayOfWeek.Monday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Sunday], resourceCollection, [["3261", "3231"], ["3262", "3232"]]) },

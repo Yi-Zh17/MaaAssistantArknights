@@ -6505,6 +6505,350 @@
     },
     {
         "apCost": 9,
+        "code": "BD-1",
+        "dropInfos": [
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30011"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30021"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30031"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30041"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30051"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30061"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "act21mini_01"
+    },
+    {
+        "apCost": 9,
+        "code": "BD-2",
+        "dropInfos": [
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30011"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30021"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30031"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30041"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30051"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30061"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "act21mini_02"
+    },
+    {
+        "apCost": 12,
+        "code": "BD-3",
+        "dropInfos": [
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30011"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30021"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30031"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30041"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30051"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30061"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "act21mini_03"
+    },
+    {
+        "apCost": 12,
+        "code": "BD-4",
+        "dropInfos": [
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30011"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30021"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30031"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30041"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30051"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30061"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "act21mini_04"
+    },
+    {
+        "apCost": 15,
+        "code": "BD-5",
+        "dropInfos": [
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30011"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30012"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30031"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30032"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "3003"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30061"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30062"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "act21mini_05"
+    },
+    {
+        "apCost": 15,
+        "code": "BD-6",
+        "dropInfos": [
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2001"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2002"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30021"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30022"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30041"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30042"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30051"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30052"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30062"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "act21mini_06"
+    },
+    {
+        "apCost": 21,
+        "code": "BD-7",
+        "dropInfos": [
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30011"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30012"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30013"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "3003"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30061"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30062"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30063"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31013"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "act21mini_07"
+    },
+    {
+        "apCost": 21,
+        "code": "BD-8",
+        "dropInfos": [
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2001"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2002"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2003"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30021"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30022"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30023"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30041"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30042"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30043"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31023"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31063"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31093"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "act21mini_08"
+    },
+    {
+        "apCost": 9,
         "code": "CW-1",
         "dropInfos": [
             {
@@ -6972,178 +7316,6 @@
             }
         ],
         "stageId": "act25side_10_perm"
-    },
-    {
-        "apCost": 9,
-        "code": "PA-1",
-        "dropInfos": [
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30011"
-            },
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30021"
-            },
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30031"
-            },
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30041"
-            },
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30051"
-            },
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30061"
-            },
-            {
-                "dropType": "FURNITURE",
-                "itemId": "furni"
-            }
-        ],
-        "stageId": "act51side_01"
-    },
-    {
-        "apCost": 9,
-        "code": "PA-2",
-        "dropInfos": [
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30011"
-            },
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30021"
-            },
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30031"
-            },
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30041"
-            },
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30051"
-            },
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30061"
-            },
-            {
-                "dropType": "FURNITURE",
-                "itemId": "furni"
-            }
-        ],
-        "stageId": "act51side_02"
-    },
-    {
-        "apCost": 12,
-        "code": "PA-3",
-        "dropInfos": [
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30022"
-            },
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30042"
-            },
-            {
-                "dropType": "FURNITURE",
-                "itemId": "furni"
-            }
-        ],
-        "stageId": "act51side_03"
-    },
-    {
-        "apCost": 12,
-        "code": "PA-4",
-        "dropInfos": [
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30032"
-            },
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30052"
-            },
-            {
-                "dropType": "FURNITURE",
-                "itemId": "furni"
-            }
-        ],
-        "stageId": "act51side_04"
-    },
-    {
-        "apCost": 12,
-        "code": "PA-5",
-        "dropInfos": [
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30042"
-            },
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30052"
-            },
-            {
-                "dropType": "FURNITURE",
-                "itemId": "furni"
-            }
-        ],
-        "stageId": "act51side_05"
-    },
-    {
-        "apCost": 21,
-        "code": "PA-6",
-        "dropInfos": [
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30023"
-            },
-            {
-                "dropType": "FURNITURE",
-                "itemId": "furni"
-            }
-        ],
-        "stageId": "act51side_06"
-    },
-    {
-        "apCost": 21,
-        "code": "PA-7",
-        "dropInfos": [
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "30053"
-            },
-            {
-                "dropType": "FURNITURE",
-                "itemId": "furni"
-            }
-        ],
-        "stageId": "act51side_07"
-    },
-    {
-        "apCost": 21,
-        "code": "PA-8",
-        "dropInfos": [
-            {
-                "dropType": "NORMAL_DROP",
-                "itemId": "31033"
-            },
-            {
-                "dropType": "FURNITURE",
-                "itemId": "furni"
-            }
-        ],
-        "stageId": "act51side_08"
     },
     {
         "apCost": 9,
@@ -9290,6 +9462,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -9343,6 +9519,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -9467,6 +9647,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -9524,6 +9708,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -9585,6 +9773,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -9642,6 +9834,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -9707,6 +9903,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -9768,6 +9968,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
             },
             {
                 "dropType": "FURNITURE",
@@ -9833,6 +10037,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -9888,6 +10096,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -9941,6 +10153,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -10004,6 +10220,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -10084,6 +10304,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -10145,6 +10369,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -10288,6 +10516,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -10345,6 +10577,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -10444,6 +10680,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -10503,6 +10743,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -10560,6 +10804,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
             },
             {
                 "dropType": "FURNITURE",
@@ -10737,6 +10985,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -10882,6 +11134,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -10939,6 +11195,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
             },
             {
                 "dropType": "FURNITURE",
@@ -11032,6 +11292,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
             },
             {
                 "dropType": "FURNITURE",
@@ -11177,6 +11441,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
             },
             {
                 "dropType": "FURNITURE",
@@ -11336,6 +11604,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -11389,6 +11661,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
             },
             {
                 "dropType": "FURNITURE",
@@ -11488,6 +11764,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -11541,6 +11821,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
             },
             {
                 "dropType": "FURNITURE",
@@ -11774,6 +12058,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -11908,6 +12196,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -11999,6 +12291,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -12161,6 +12457,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -12222,6 +12522,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
             },
             {
                 "dropType": "FURNITURE",
@@ -12302,6 +12606,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -12355,6 +12663,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -12433,6 +12745,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
             },
             {
                 "dropType": "FURNITURE",
@@ -12557,6 +12873,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -12629,6 +12949,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -12757,6 +13081,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -12816,6 +13144,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -12873,6 +13205,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -13001,6 +13337,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -13064,6 +13404,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -13123,6 +13467,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -13176,6 +13524,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -13239,6 +13591,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
             },
             {
                 "dropType": "FURNITURE",
@@ -13321,6 +13677,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -13453,6 +13813,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -13506,6 +13870,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -13661,6 +14029,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -13710,6 +14082,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -13769,6 +14145,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -13893,6 +14273,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -13950,6 +14334,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -14153,6 +14541,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -14218,6 +14610,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
             },
             {
                 "dropType": "FURNITURE",
@@ -14294,6 +14690,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -14347,6 +14747,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -14498,6 +14902,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -14566,6 +14974,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -14769,6 +15181,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -14836,6 +15252,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -14889,6 +15309,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -15017,6 +15441,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -15080,6 +15508,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -15133,6 +15565,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -15255,6 +15691,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -15387,6 +15827,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -15440,6 +15884,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -15509,6 +15957,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -15566,6 +16018,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -15765,6 +16221,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -15822,6 +16282,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -15891,6 +16355,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -15958,6 +16426,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -16011,6 +16483,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -16072,6 +16548,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -16129,6 +16609,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -16265,6 +16749,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -16318,6 +16806,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -16385,6 +16877,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
             },
             {
                 "dropType": "FURNITURE",
@@ -16513,6 +17009,10 @@
                 "itemId": "31074"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -16580,6 +17080,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -16637,6 +17141,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -16757,6 +17265,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -16824,6 +17336,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -16887,6 +17403,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -16944,6 +17464,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -17076,6 +17600,10 @@
                 "itemId": "31084"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -17133,6 +17661,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -17200,6 +17732,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
             },
             {
                 "dropType": "FURNITURE",
@@ -17407,6 +17943,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -17470,6 +18010,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -17523,6 +18067,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -17659,6 +18207,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -17716,6 +18268,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -17852,6 +18408,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -17901,6 +18461,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -17960,6 +18524,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -18092,6 +18660,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -18149,6 +18721,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -18281,6 +18857,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -18411,6 +18991,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -18468,6 +19052,10 @@
             {
                 "dropType": "SPECIAL_DROP",
                 "itemId": "31084"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -18546,6 +19134,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -20470,6 +21062,868 @@
             }
         ],
         "stageId": "main_16-16"
+    },
+    {
+        "apCost": 21,
+        "code": "17-2",
+        "dropInfos": [
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30011"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30012"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30013"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "3003"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30061"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30062"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30063"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31013"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "main_17-01"
+    },
+    {
+        "apCost": 21,
+        "code": "17-3",
+        "dropInfos": [
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2001"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2002"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2003"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30021"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30022"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30023"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30041"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30042"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30043"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30083"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "31013"
+            },
+            {
+                "dropType": "SPECIAL_DROP",
+                "itemId": "31014"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31023"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31063"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31093"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "main_17-02"
+    },
+    {
+        "apCost": 21,
+        "code": "17-4",
+        "dropInfos": [
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30031"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30032"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30033"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30051"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30052"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30053"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30093"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30103"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31033"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31043"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31053"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31083"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "31093"
+            },
+            {
+                "dropType": "SPECIAL_DROP",
+                "itemId": "31094"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "main_17-03"
+    },
+    {
+        "apCost": 21,
+        "code": "17-5",
+        "dropInfos": [
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30011"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30012"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30013"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "3003"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30061"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30062"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30063"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31013"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31073"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "31103"
+            },
+            {
+                "dropType": "SPECIAL_DROP",
+                "itemId": "31104"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "main_17-04"
+    },
+    {
+        "apCost": 24,
+        "code": "17-6",
+        "dropInfos": [
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30011"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30012"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30013"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "3003"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30061"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30062"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30063"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30073"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31013"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "main_17-05"
+    },
+    {
+        "apCost": 21,
+        "code": "17-7",
+        "dropInfos": [
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2001"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2002"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2003"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30021"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30022"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30023"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30041"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30042"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30043"
+            },
+            {
+                "dropType": "SPECIAL_DROP",
+                "itemId": "30044"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31023"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31063"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31093"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "main_17-06"
+    },
+    {
+        "apCost": 21,
+        "code": "17-8",
+        "dropInfos": [
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30031"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30032"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30033"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30051"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30052"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30053"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30093"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30103"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31033"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31043"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31053"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "31083"
+            },
+            {
+                "dropType": "SPECIAL_DROP",
+                "itemId": "31084"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "main_17-07"
+    },
+    {
+        "apCost": 21,
+        "code": "17-9",
+        "dropInfos": [
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "2003"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30011"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30012"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30013"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "3003"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30061"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30062"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30063"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31013"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "main_17-08"
+    },
+    {
+        "apCost": 21,
+        "code": "17-10",
+        "dropInfos": [
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2001"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2002"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2003"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30021"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30022"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30023"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30041"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30042"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30043"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31023"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "31043"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31063"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31093"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "main_17-09"
+    },
+    {
+        "apCost": 21,
+        "code": "17-11",
+        "dropInfos": [
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30031"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30032"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30033"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30051"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30052"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30053"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30093"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30103"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31033"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31043"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31053"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31083"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "31113"
+            },
+            {
+                "dropType": "SPECIAL_DROP",
+                "itemId": "31114"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "main_17-10"
+    },
+    {
+        "apCost": 24,
+        "code": "17-12",
+        "dropInfos": [
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30032"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30063"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "main_17-11"
+    },
+    {
+        "apCost": 21,
+        "code": "17-13",
+        "dropInfos": [
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30011"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30012"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30013"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "3003"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "30053"
+            },
+            {
+                "dropType": "SPECIAL_DROP",
+                "itemId": "30054"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30061"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30062"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30063"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31013"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "main_17-12"
+    },
+    {
+        "apCost": 24,
+        "code": "17-15",
+        "dropInfos": [
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2001"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2002"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2003"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30021"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30022"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30023"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30041"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30042"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30043"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31023"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "31063"
+            },
+            {
+                "dropType": "SPECIAL_DROP",
+                "itemId": "31064"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31093"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "main_17-14"
+    },
+    {
+        "apCost": 21,
+        "code": "17-17",
+        "dropInfos": [
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2001"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2002"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "2003"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30021"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30022"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30023"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30041"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30042"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30043"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "30083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31023"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31063"
+            },
+            {
+                "dropType": "NORMAL_DROP",
+                "itemId": "31073"
+            },
+            {
+                "dropType": "SPECIAL_DROP",
+                "itemId": "31074"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31093"
+            },
+            {
+                "dropType": "FURNITURE",
+                "itemId": "furni"
+            }
+        ],
+        "stageId": "main_17-16"
     },
     {
         "apCost": 18,
@@ -23642,6 +25096,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -23821,6 +25279,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
             },
             {
                 "dropType": "FURNITURE",
@@ -24004,6 +25466,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -24120,6 +25586,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -24379,6 +25849,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -24440,6 +25914,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -24572,6 +26050,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -24661,6 +26143,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -24714,6 +26200,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -24861,6 +26351,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -24983,6 +26477,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -25036,6 +26534,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -25191,6 +26693,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -25240,6 +26746,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -25299,6 +26809,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -25423,6 +26937,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -25480,6 +26998,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -25683,6 +27205,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -25748,6 +27274,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
             },
             {
                 "dropType": "FURNITURE",
@@ -25824,6 +27354,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -25877,6 +27411,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -26028,6 +27566,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -26096,6 +27638,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -26299,6 +27845,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -26366,6 +27916,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -26419,6 +27973,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -26547,6 +28105,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -26610,6 +28172,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -26663,6 +28229,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -26785,6 +28355,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -26917,6 +28491,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -26970,6 +28548,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -27039,6 +28621,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -27096,6 +28682,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -27295,6 +28885,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -27352,6 +28946,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -27421,6 +29019,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -27488,6 +29090,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -27541,6 +29147,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -27602,6 +29212,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -27659,6 +29273,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -27795,6 +29413,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -27848,6 +29470,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -27915,6 +29541,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
             },
             {
                 "dropType": "FURNITURE",
@@ -28043,6 +29673,10 @@
                 "itemId": "31074"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -28110,6 +29744,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -28167,6 +29805,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -28287,6 +29929,10 @@
                 "itemId": "31073"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -28354,6 +30000,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -28417,6 +30067,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -28474,6 +30128,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -28606,6 +30264,10 @@
                 "itemId": "31084"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -28663,6 +30325,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -28730,6 +30396,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31083"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
             },
             {
                 "dropType": "FURNITURE",
@@ -28937,6 +30607,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -29000,6 +30674,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -29053,6 +30731,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -29189,6 +30871,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -29246,6 +30932,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -29382,6 +31072,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -29431,6 +31125,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -29490,6 +31188,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -29622,6 +31324,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -29679,6 +31385,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -29811,6 +31521,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -29941,6 +31655,10 @@
                 "itemId": "31083"
             },
             {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31113"
+            },
+            {
                 "dropType": "FURNITURE",
                 "itemId": "furni"
             }
@@ -29998,6 +31716,10 @@
             {
                 "dropType": "SPECIAL_DROP",
                 "itemId": "31084"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",
@@ -30076,6 +31798,10 @@
             {
                 "dropType": "EXTRA_DROP",
                 "itemId": "31073"
+            },
+            {
+                "dropType": "EXTRA_DROP",
+                "itemId": "31103"
             },
             {
                 "dropType": "FURNITURE",

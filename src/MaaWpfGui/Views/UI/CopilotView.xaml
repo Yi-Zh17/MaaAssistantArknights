@@ -227,6 +227,7 @@
                         BorderThickness="0,1,1,1"
                         Command="{s:Action PasteClipboard}"
                         IsEnabled="{c:Binding '(Idle) and (StartEnabled)'}" />
+                    <!-- TODO: 作业站迁移完成后删除此按钮及下方的 TooltipBlock -->
                     <Button
                         Grid.Column="3"
                         Height="30"
@@ -251,6 +252,7 @@
                         MouseLeftButtonDown="{s:Action PasteClipboard}"
                         NormalOpacity="0.25"
                         TooltipText="{DynamicResource PasteClipboardTip}" />
+                    <!-- TODO: 作业站迁移完成后删除此 TooltipBlock -->
                     <controls:TooltipBlock
                         Grid.Column="3"
                         Margin="0,0,-2,0"
@@ -288,7 +290,7 @@
                             Height="50"
                             Command="{s:Action Stop}"
                             Content="{DynamicResource Stop}"
-                            IsEnabled="{c:Binding Inited}"
+                            IsEnabled="{c:Binding 'Inited and !Stopping'}"
                             Visibility="{c:Binding !Idle}" />
                     </Grid>
                     <StackPanel
@@ -384,7 +386,8 @@
                                     Placement="Center"
                                     PlacementTarget="{Binding ElementName=UserAdditionalButton}"
                                     PopupAnimation="Slide"
-                                    StaysOpen="False">
+                                    StaysOpen="False"
+                                    VerticalOffset="{Binding UserAdditionalPopupVerticalOffset}">
                                     <Border
                                         MaxWidth="600"
                                         MaxHeight="500"
@@ -397,7 +400,8 @@
                                             <TextBlock Margin="0,0,0,5" Text="{DynamicResource AddUserAdditional}" />
                                             <DataGrid
                                                 x:Name="UserAdditionalDataGrid"
-                                                MaxHeight="350"
+                                                Height="{Binding UserAdditionalGridHeight}"
+                                                MaxHeight="{Binding UserAdditionalGridMaxHeight}"
                                                 AutoGenerateColumns="False"
                                                 Background="{DynamicResource RegionBrush}"
                                                 CanUserAddRows="False"
@@ -406,7 +410,7 @@
                                                 CanUserResizeRows="False"
                                                 HeadersVisibility="Column"
                                                 ItemsSource="{Binding UserAdditionalItems}"
-                                                RowHeight="40"
+                                                RowHeight="{Binding UserAdditionalRowHeight}"
                                                 SelectionMode="Single">
                                                 <DataGrid.RowStyle>
                                                     <Style TargetType="DataGridRow">
@@ -707,14 +711,27 @@
                 </Grid>
             </Grid>
 
-            <controls:TextBlock Grid.Row="2" Block.TextAlignment="Center">
-                <Hyperlink
-                    Cursor="Hand"
-                    NavigateUri="{Binding CopilotUrl}"
-                    TextDecorations="None">
-                    <TextBlock d:Text="PrtsPlus" Text="{Binding UrlText}" />
-                </Hyperlink>
-            </controls:TextBlock>
+            <StackPanel
+                Grid.Row="2"
+                HorizontalAlignment="Center"
+                Orientation="Vertical">
+                <controls:TextBlock Block.TextAlignment="Center" Visibility="{c:Binding HasVideoUrl}">
+                    <Hyperlink
+                        Cursor="Hand"
+                        NavigateUri="{Binding VideoUrl}"
+                        TextDecorations="None">
+                        <TextBlock Text="{DynamicResource VideoLink}" />
+                    </Hyperlink>
+                </controls:TextBlock>
+                <controls:TextBlock Block.TextAlignment="Center">
+                    <Hyperlink
+                        Cursor="Hand"
+                        NavigateUri="{Binding CopilotUrl}"
+                        TextDecorations="None">
+                        <TextBlock d:Text="PrtsPlus" Text="{DynamicResource PrtsPlus}" />
+                    </Hyperlink>
+                </controls:TextBlock>
+            </StackPanel>
         </Grid>
 
         <Grid

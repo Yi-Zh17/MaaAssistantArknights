@@ -20,7 +20,9 @@
             "OperBoxJieGarden",
             "OperBoxAveMujica",
             "OperBoxTogether",
-            "OperBoxLoneTrail"
+            "OperBoxLoneTrail",
+            "OperBoxReconstruct",
+            "OperBoxHunting"
         ],
         "onErrorNext": ["OperBox-Entry@SwitchTheme@ToggleSettingsMenu"]
     },
@@ -83,5 +85,14 @@
     "OperBoxLoneTrail": {
         "baseTask": "OperBoxDefault",
         "template": ["LoneTrail/Day/OperBoxEnter.png", "LoneTrail/Night/OperBoxEnter.png"]
+    },
+    "OperBoxReconstruct": {
+        "baseTask": "OperBoxDefault",
+        "template": "Reconstruct/OperBoxEnter.png"
+    },
+    "OperBoxHunting": {
+        "baseTask": "OperBoxDefault",
+        "template": "Hunting/OperBoxEnter.png",
+        "roi": [1045, 295, 165, 150]
     }
 }

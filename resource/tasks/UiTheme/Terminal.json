@@ -21,7 +21,9 @@
             "TerminalJieGarden",
             "TerminalAveMujica",
             "TerminalTogether",
-            "TerminalLoneTrail"
+            "TerminalLoneTrail",
+            "TerminalReconstruct",
+            "TerminalHunting"
         ],
         "onErrorNext": ["Terminal-Entry@SwitchTheme@ToggleSettingsMenu"]
     },
@@ -84,5 +86,14 @@
     "TerminalLoneTrail": {
         "baseTask": "TerminalDefault",
         "template": ["LoneTrail/Day/Terminal.png", "LoneTrail/Night/Terminal.png"]
+    },
+    "TerminalReconstruct": {
+        "baseTask": "TerminalDefault",
+        "template": "Reconstruct/Terminal.png"
+    },
+    "TerminalHunting": {
+        "baseTask": "TerminalDefault",
+        "template": "Hunting/Terminal.png",
+        "roi": [861, 74, 248, 127]
     }
 }

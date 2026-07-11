@@ -54,7 +54,6 @@ public static class ConfigurationKeys
     public const string UseCardLog = "GUI.UseCardLog";
     public const string WindowTitleSelectShowList = "GUI.WindowTitleSelectShowList";
     public const string SoberLanguage = "GUI.SoberLanguage";
-    public const string Cheers = "GUI.Cheers";
     public const string Hangover = "GUI.Hangover";
     public const string LastBuyWineTime = "GUI.LastBuyWineTime";
     public const string CustomCulture = "GUI.CustomCulture";
@@ -248,6 +247,8 @@ public static class ConfigurationKeys
 
     public const string AutoDownloadUpdatePackage = "VersionUpdate.AutoDownloadUpdatePackage";
     public const string AutoInstallUpdatePackage = "VersionUpdate.AutoInstallUpdatePackage";
+    public const string ShowUpdaterConsole = "VersionUpdate.ShowUpdaterConsole";
+    public const string ShowUpdaterProgress = "VersionUpdate.ShowUpdaterProgress";
 
     public const string PenguinId = "Penguin.Id";
     public const string IsDrGrandet = "Penguin.IsDrGrandet"; // 已迁移
@@ -255,8 +256,10 @@ public static class ConfigurationKeys
 
     public const string EnableYituliu = "Yituliu.EnableYituliu";
 
-    public const string TaskTimeoutMinutes = "TimeOut.Timer.TaskTimeoutMinutes";
+    // public const string TaskTimeoutMinutes = "TimeOut.Timer.TaskTimeoutMinutes";
     public const string ReminderIntervalMinutes = "TimeOut.Timer.ReminderIntervalMinutes";
+    public const string StallTimeoutMinutes = "TimeOut.Timer.StallTimeoutMinutes";
+    public const string StallTimeoutEnabled = "TimeOut.Timer.StallTimeoutEnabled";
 
     public const string BluestacksConfigPath = "Bluestacks.Config.Path";
     public const string BluestacksConfigKeyword = "Bluestacks.Config.Keyword";
@@ -292,7 +295,7 @@ public static class ConfigurationKeys
     public const string ExternalNotificationSendWhenComplete = "ExternalNotification.SendWhenComplete";
     public const string ExternalNotificationEnableDetails = "ExternalNotification.EnableDetails";
     public const string ExternalNotificationSendWhenError = "ExternalNotification.SendWhenError";
-    public const string ExternalNotificationSendWhenTimeout = "ExternalNotification.SendWhenTimeout";
+    public const string ExternalNotificationSendWhenStalled = "ExternalNotification.SendWhenStalled";
     public const string ExternalNotificationSmtpServer = "ExternalNotification.Smtp.Server";
     public const string ExternalNotificationSmtpPort = "ExternalNotification.Smtp.Port";
     public const string ExternalNotificationSmtpUser = "ExternalNotification.Smtp.User";
@@ -320,6 +323,7 @@ public static class ConfigurationKeys
     public const string ExternalNotificationGotifyToken = "ExternalNotification.Gotify.Token";
     public const string ExternalNotificationCustomWebhookUrl = "ExternalNotification.CustomWebhook.Url";
     public const string ExternalNotificationCustomWebhookBody = "ExternalNotification.CustomWebhook.Body";
+    public const string ExternalNotificationCustomWebhookHeaders = "ExternalNotification.CustomWebhook.Headers";
 
     public const string PerformanceUseGpu = "Performance.UseGpu";
     public const string PerformancePreferredGpuDescription = "Performance.PreferredGpuDescription";
@@ -335,6 +339,7 @@ public static class ConfigurationKeys
     public const string VersionUpdateDoNotShowUpdate = "VersionUpdate.doNotShowUpdate";
 
     public const string OperBoxData = "OperBox.Data";
+    public const string OperBoxSelectedExportValue = "OperBox.SelectedExportValue";
 
     public const string GachaShowDisclaimerNoMore = "Gacha.ShowDisclaimerNoMore";
 

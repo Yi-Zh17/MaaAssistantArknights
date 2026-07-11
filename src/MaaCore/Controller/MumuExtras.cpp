@@ -74,10 +74,18 @@ std::optional<cv::Mat> MumuExtras::screencap()
                      << VAR(display_id) << VAR(display_buffer_.size()) << VAR(display_width_) << VAR(display_height_);
             return std::nullopt;
         }
+        // Reload 之后 display_id 可能变化，重新获取后再重试一次 capture。
+        display_id = get_display_id();
+        ret = capture_display_func_(
+            mumu_handle_,
+            display_id,
+            static_cast<int>(display_buffer_.size()),
+            &display_width_,
+            &display_height_,
+            display_buffer_.data());
         if (ret) {
-            LogError << "Failed to capture display, but reload before retrying capture was successful. " << VAR(ret)
-                     << VAR(mumu_handle_) << VAR(display_id) << VAR(display_buffer_.size()) << VAR(display_width_)
-                     << VAR(display_height_);
+            LogError << "Failed to capture display even after reload. " << VAR(ret) << VAR(mumu_handle_)
+                     << VAR(display_id) << VAR(display_buffer_.size()) << VAR(display_width_) << VAR(display_height_);
             return std::nullopt;
         }
     }
@@ -93,11 +101,28 @@ std::optional<cv::Mat> MumuExtras::screencap()
 
 bool MumuExtras::load_mumu_library()
 {
-    auto new_lib_path = mumu_path_ / "nx_device/12.0/shell/sdk/external_renderer_ipc"; // MuMu 5.0 内测路径, 可能变更
-    auto lib_path = mumu_path_ / "shell/sdk/external_renderer_ipc";
+    // 候选路径列表，按版本从新到旧排列，新增版本只需追加一项
+    static const std::vector<std::filesystem::path> kCandidateRelativePaths = {
+        "nx_device/15.0/shell/sdk/external_renderer_ipc", // MuMu 6.0
+        "nx_device/12.0/shell/sdk/external_renderer_ipc", // MuMu 5.0 / MuMu 12
+        "shell/sdk/external_renderer_ipc",                // MuMu 旧版本
+    };
 
-    if (!load_library(new_lib_path) && !load_library(lib_path)) {
-        LogError << "Failed to load library" << VAR(new_lib_path) << "or" << VAR(lib_path);
+    bool loaded = false;
+    for (const auto& rel_path : kCandidateRelativePaths) {
+        auto lib_path = mumu_path_ / rel_path;
+        if (load_library(lib_path)) {
+            LogInfo << "Successfully loaded MuMu external renderer library from: " << lib_path;
+            loaded = true;
+            break;
+        }
+    }
+
+    if (!loaded) {
+        LogError << "Failed to load library from all candidate paths";
+        for (const auto& rel_path : kCandidateRelativePaths) {
+            LogError << "  tried: " << (mumu_path_ / rel_path);
+        }
         return false;
     }
 

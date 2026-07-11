@@ -21,6 +21,7 @@ using HandyControl.Data;
 using MaaWpfGui.Constants;
 using MaaWpfGui.Helper;
 using MaaWpfGui.Models;
+using MaaWpfGui.ViewModels.UI;
 using MaaWpfGui.Views.Dialogs;
 using Stylet;
 using Window = System.Windows.Window;
@@ -108,9 +109,9 @@ public class AchievementSettingsUserControlModel : PropertyChangedBase
         }
     }
 
-    private static Window? _achievementsWindow;
+    private static AchievementListDialogView? _achievementsWindow;
 
-    public void OnShowAchievementsClick()
+    public void OnShowAchievementsClick(string? achievementId = null)
     {
         AchievementTrackerHelper.Instance.Unlock(AchievementIds.AchievementObserver);
         if (_achievementsWindow is null)
@@ -125,6 +126,11 @@ public class AchievementSettingsUserControlModel : PropertyChangedBase
         }
 
         WindowManager.ShowWindow(_achievementsWindow);
+
+        if (achievementId != null)
+        {
+            AchievementTrackerHelper.Instance.SearchAndSyncText(achievementId);
+        }
     }
 
     private int _clickCount = 0;
@@ -138,12 +144,19 @@ public class AchievementSettingsUserControlModel : PropertyChangedBase
         if (_isTriggered)
         {
             ResetDebugState();
+            Instances.SettingsViewModel.Sober();
+            Instances.SettingsViewModel.HangoverEnd();
             return;
         }
 
         if (Instances.VersionUpdateDialogViewModel.IsDebugVersion())
         {
             EnableDebugMode();
+            SettingsViewModel.ShowEasterEggDialog(
+                LocalizationHelper.GetString("Burping"),
+                LocalizationHelper.GetString("DrunkAndStaggering"),
+                LocalizationHelper.GetString("Ok"),
+                () => Instances.SettingsViewModel.GetDrunk());
             return;
         }
 
@@ -158,6 +171,11 @@ public class AchievementSettingsUserControlModel : PropertyChangedBase
         if (shouldTriggerDebug)
         {
             EnableDebugMode();
+            SettingsViewModel.ShowEasterEggDialog(
+                LocalizationHelper.GetString("Burping"),
+                LocalizationHelper.GetString("DrunkAndStaggering"),
+                LocalizationHelper.GetString("Ok"),
+                () => Instances.SettingsViewModel.GetDrunk());
         }
     }
 
@@ -203,7 +221,7 @@ public class AchievementSettingsUserControlModel : PropertyChangedBase
         AchievementTrackerHelper.Instance.LockAll();
     }
 
-    private bool _achievementPopupDisabled = Convert.ToBoolean(ConfigurationHelper.GetValue(ConfigurationKeys.AchievementPopupDisabled, bool.FalseString));
+    private bool _achievementPopupDisabled = ConfigurationHelper.GetValue(ConfigurationKeys.AchievementPopupDisabled, false);
 
     /// <summary>
     /// Gets or sets a value indicating whether to disable achievement notifications.

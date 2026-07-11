@@ -30,6 +30,7 @@ using System.Windows.Threading;
 using GlobalHotKey;
 using MaaWpfGui.Configuration.Factory;
 using MaaWpfGui.Constants;
+using MaaWpfGui.Extensions;
 using MaaWpfGui.Helper;
 using MaaWpfGui.Properties;
 using MaaWpfGui.Services;
@@ -62,6 +63,8 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
 
     private static Mutex _mutex;
     private static bool _hasMutex;
+    private static EventWaitHandle _instanceActivationEvent;
+    private static CancellationTokenSource _instanceActivationListenerCancellation;
 
     public static readonly string UiLogFile = Path.Combine(PathsHelper.DebugDir, "gui.log");
     public static readonly string UiLogBakFile = Path.Combine(PathsHelper.DebugDir, "gui.bak.log");
@@ -144,37 +147,42 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
         }
     }
 
-    public static bool IsRunningInTempDirectory()
+    private static readonly Environment.SpecialFolder[] s_unsupportedInstallLocationSpecialFolders =
     {
+        Environment.SpecialFolder.CommonApplicationData,
+        Environment.SpecialFolder.ApplicationData,
+        Environment.SpecialFolder.LocalApplicationData,
+        Environment.SpecialFolder.CommonProgramFiles,
+        Environment.SpecialFolder.CommonProgramFilesX86,
+        Environment.SpecialFolder.ProgramFiles,
+        Environment.SpecialFolder.ProgramFilesX86,
+        Environment.SpecialFolder.UserProfile,
+        Environment.SpecialFolder.Windows,
+    };
+
+    private static bool TryGetUnsupportedInstallLocation(out string matchedLocation)
+    {
+        matchedLocation = string.Empty;
+
         try
         {
-            var currentPath = Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
-            var tempPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            string currentPath = NormalizeDirectoryPath(AppDomain.CurrentDomain.BaseDirectory);
+            if (IsDriveRootDirectory(currentPath))
             {
-                Path.GetFullPath(Path.GetTempPath()),
-            };
-
-            var envVars = new[] { "TEMP", "TMP", "TMPDIR" };
-            foreach (var envVar in envVars)
-            {
-                var envValue = Environment.GetEnvironmentVariable(envVar);
-                if (!string.IsNullOrEmpty(envValue))
-                {
-                    try
-                    {
-                        tempPaths.Add(Path.GetFullPath(envValue));
-                    }
-                    catch
-                    {
-                    }
-                }
+                matchedLocation = currentPath;
+                return true;
             }
 
-            foreach (var tempPath in tempPaths)
+            if (TryGetTempInstallLocation(currentPath, out matchedLocation))
             {
-                if (currentPath.StartsWith(tempPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar,
-                    StringComparison.OrdinalIgnoreCase))
+                return true;
+            }
+
+            foreach (string unsupportedLocation in GetUnsupportedInstallLocationPaths())
+            {
+                if (string.Equals(currentPath, unsupportedLocation, StringComparison.OrdinalIgnoreCase))
                 {
+                    matchedLocation = unsupportedLocation;
                     return true;
                 }
             }
@@ -185,6 +193,119 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
         {
             return false;
         }
+    }
+
+    private static bool TryGetTempInstallLocation(string currentPath, out string matchedLocation)
+    {
+        matchedLocation = string.Empty;
+
+        foreach (string tempPath in GetTempDirectoryPaths())
+        {
+            if (IsPathUnderDirectory(currentPath, tempPath))
+            {
+                matchedLocation = tempPath;
+                return true;
+            }
+        }
+
+        string currentDirectoryName = Path.GetFileName(currentPath);
+        if (IsTempLikeDirectoryName(currentDirectoryName))
+        {
+            matchedLocation = currentPath;
+            return true;
+        }
+
+        DirectoryInfo parent = Directory.GetParent(currentPath);
+        if (parent != null && IsTempLikeDirectoryName(parent.Name))
+        {
+            matchedLocation = NormalizeDirectoryPath(parent.FullName);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsTempLikeDirectoryName(string directoryName)
+    {
+        return !string.IsNullOrWhiteSpace(directoryName)
+            && (directoryName.StartsWith("temp", StringComparison.OrdinalIgnoreCase)
+                || directoryName.StartsWith("tmp", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static HashSet<string> GetTempDirectoryPaths()
+    {
+        var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        AddCandidateDirectoryPath(paths, Path.GetTempPath());
+
+        string[] envVars = ["TEMP", "TMP", "TMPDIR"];
+        foreach (string envVar in envVars)
+        {
+            AddCandidateDirectoryPath(paths, Environment.GetEnvironmentVariable(envVar) ?? string.Empty);
+        }
+
+        return paths;
+    }
+
+    private static HashSet<string> GetUnsupportedInstallLocationPaths()
+    {
+        var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (Environment.SpecialFolder specialFolder in s_unsupportedInstallLocationSpecialFolders)
+        {
+            AddCandidateDirectoryPath(paths, Environment.GetFolderPath(specialFolder));
+        }
+
+        string commonDocumentsPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments);
+        string publicUserPath = Directory.GetParent(NormalizeDirectoryPath(commonDocumentsPath))?.FullName ?? string.Empty;
+        AddCandidateDirectoryPath(paths, publicUserPath);
+
+        string windowsPath = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+        AddCandidateDirectoryPath(paths, Path.Combine(windowsPath, "System32", "Drivers", "DriverData"));
+
+        return paths;
+    }
+
+    private static void AddCandidateDirectoryPath(HashSet<string> paths, string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return;
+        }
+
+        try
+        {
+            paths.Add(NormalizeDirectoryPath(path));
+        }
+        catch
+        {
+        }
+    }
+
+    private static string NormalizeDirectoryPath(string path)
+    {
+        return Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+    }
+
+    private static bool IsDriveRootDirectory(string currentPath)
+    {
+        string rootPath = Path.GetPathRoot(currentPath)?.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        return !string.IsNullOrEmpty(rootPath)
+            && rootPath.Length == 2
+            && rootPath[1] == ':'
+            && string.Equals(currentPath, rootPath, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsPathUnderDirectory(string currentPath, string parentPath)
+    {
+        return EnsureTrailingSeparator(currentPath)
+            .StartsWith(EnsureTrailingSeparator(parentPath), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string EnsureTrailingSeparator(string path)
+    {
+        return path.Length > 0 && (path[^1] == Path.DirectorySeparatorChar || path[^1] == Path.AltDirectorySeparatorChar)
+            ? path
+            : path + Path.DirectorySeparatorChar;
     }
 
     public static void ParseCrashLog()
@@ -376,12 +497,65 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
 
         ConfigurationHelper.Load();
         LocalizationHelper.Load();
-        if (VersionUpdateDialogViewModel.HasPendingUpdatePackage())
+        if (PendingUpdateApplier.TryConsumeDelegatedUpdateSuccess())
+        {
+            _logger.Information("Delegated pending update completed successfully");
+        }
+
+        if (PendingUpdateApplier.TryConsumeDelegatedUpdateFailure(out string delegatedUpdateFailureReason))
+        {
+            _logger.Error("Delegated pending update failed. Reason: {Reason}", delegatedUpdateFailureReason);
+            ShowPendingUpdateRecoveryDialog();
+            Shutdown();
+            return;
+        }
+
+        if (TryGetUnsupportedInstallLocation(out string unsupportedLocation))
+        {
+            string currentBaseDirectory = NormalizeDirectoryPath(AppDomain.CurrentDomain.BaseDirectory);
+            _logger.Error(
+                "Blocked startup from unsupported install location: currentPath={CurrentPath}, matchedLocation={MatchedLocation}",
+                currentBaseDirectory,
+                unsupportedLocation);
+            MessageBoxHelper.Show(
+                LocalizationHelper.GetStringFormat("UnsupportedInstallLocationError", currentBaseDirectory, unsupportedLocation),
+                LocalizationHelper.GetString("Error"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            Shutdown();
+            return;
+        }
+
+        if (PendingUpdateApplier.HasPendingUpdatePackage())
         {
             _logger.Information("Pending update package detected, applying before full startup");
-            if (VersionUpdateDialogViewModel.TryApplyPendingUpdatePackage())
+            var pendingUpdateResult = PendingUpdateApplier.TryApplyPendingUpdatePackage();
+            if (pendingUpdateResult.Delegated)
+            {
+                _logger.Information("Pending update package handed off to external updater, exiting current process");
+                Shutdown();
+                return;
+            }
+
+            if (pendingUpdateResult.Succeeded)
             {
                 RestartAfterPendingUpdateEarly();
+                return;
+            }
+
+            if (pendingUpdateResult.Status == PendingUpdateApplyResult.StatusKind.MissingUpdaterExecutable)
+            {
+                _logger.Error("Pending update package could not be delegated because MAA.Updater.exe is missing. Reason: {Reason}", pendingUpdateResult.FailureReason);
+                ShowPendingUpdateMissingUpdaterDialog();
+                Shutdown();
+                return;
+            }
+
+            if (pendingUpdateResult.RequiresManualRecovery)
+            {
+                _logger.Error("Pending update package left the installation in an incomplete state. Reason: {Reason}", pendingUpdateResult.FailureReason);
+                ShowPendingUpdateRecoveryDialog();
+                Shutdown();
                 return;
             }
 
@@ -450,17 +624,6 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
             return;
         }
 
-        if (IsRunningInTempDirectory())
-        {
-            MessageBoxHelper.Show(
-                LocalizationHelper.GetString("RunningInTempDirectoryError"),
-                LocalizationHelper.GetString("Error"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
-            Shutdown();
-            return;
-        }
-
         if (!HandleMultipleInstances())
         {
             Shutdown();
@@ -511,15 +674,20 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
 
     private static bool HandleMultipleInstances()
     {
-        // 设置互斥量的名称
-        string mutexName = "MAA_" + PathsHelper.BaseDir.Replace("\\", "_").Replace(":", string.Empty);
-        _mutex = new Mutex(true, mutexName, out var isOnlyInstance);
+        string activationEventName = "MAA_SHOW_" + InstanceKey;
+        _mutex = new Mutex(true, MutexName, out var isOnlyInstance);
 
         try
         {
             if (isOnlyInstance || _mutex.WaitOne(500))
             {
+                EnsureInstanceActivationEvent(activationEventName);
                 return true;
+            }
+
+            if (SignalExistingInstance(activationEventName))
+            {
+                return false;
             }
 
             MessageBoxHelper.Show(LocalizationHelper.GetString("MultiInstanceUnderSamePath"), "MAA", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -529,6 +697,7 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
         {
             // 上一个程序没有正常释放互斥量
             // 即使捕获到这个异常，此时也已经获得了锁
+            EnsureInstanceActivationEvent(activationEventName);
             return true;
         }
         catch (Exception e)
@@ -536,6 +705,99 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
             MessageBoxHelper.Show(LocalizationHelper.GetString("MultiInstanceUnderSamePath") + e.Message, "MAA", MessageBoxButton.OK, MessageBoxImage.Warning);
             return false;
         }
+    }
+
+    public static string InstanceKey
+    {
+        get
+        {
+            var normalizedBaseDir = Path.GetFullPath(PathsHelper.BaseDir)
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                .ToUpperInvariant();
+            return normalizedBaseDir.StableHash();
+        }
+    }
+
+    public static string MutexName => "MAA_" + InstanceKey;
+
+    private static void EnsureInstanceActivationEvent(string activationEventName)
+    {
+        _instanceActivationEvent ??= new EventWaitHandle(false, EventResetMode.AutoReset, activationEventName);
+    }
+
+    private static bool SignalExistingInstance(string activationEventName)
+    {
+        try
+        {
+            using var activationEvent = EventWaitHandle.OpenExisting(activationEventName);
+            activationEvent.Set();
+            _logger.Information("Secondary launch detected, activation signal sent to existing instance");
+            return true;
+        }
+        catch (WaitHandleCannotBeOpenedException)
+        {
+            _logger.Warning("Secondary launch detected, but no activation listener was available");
+            return false;
+        }
+        catch (Exception e)
+        {
+            _logger.Warning(e, "Failed to signal the existing instance");
+            return false;
+        }
+    }
+
+    private static void StartInstanceActivationListener()
+    {
+        if (_instanceActivationEvent == null || _instanceActivationListenerCancellation != null)
+        {
+            return;
+        }
+
+        _instanceActivationListenerCancellation = new CancellationTokenSource();
+        _ = Task.Run(() => ListenForInstanceActivation(_instanceActivationListenerCancellation.Token));
+    }
+
+    private static void ListenForInstanceActivation(CancellationToken cancellationToken)
+    {
+        if (_instanceActivationEvent == null)
+        {
+            return;
+        }
+
+        WaitHandle[] waitHandles = [_instanceActivationEvent, cancellationToken.WaitHandle];
+
+        try
+        {
+            while (true)
+            {
+                int signaledIndex = WaitHandle.WaitAny(waitHandles);
+                if (signaledIndex != 0)
+                {
+                    return;
+                }
+
+                Application.Current?.Dispatcher.BeginInvoke(new Action(ActivateMainWindow), DispatcherPriority.Normal);
+            }
+        }
+        catch (ObjectDisposedException)
+        {
+            // ignored during shutdown
+        }
+        catch (Exception e)
+        {
+            _logger.Warning(e, "Existing instance activation listener stopped unexpectedly");
+        }
+    }
+
+    private static void ActivateMainWindow()
+    {
+        if (Application.Current == null || Application.Current.IsShuttingDown())
+        {
+            return;
+        }
+
+        Instances.MainWindowManager.Show();
+        _logger.Information("Existing instance window activated by a secondary launch");
     }
 
     public static bool IsUserAdministrator() => new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
@@ -610,6 +872,7 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
 
         Instances.WindowManager.ShowWindow(rootViewModel);
         Instances.InstantiateOnRootViewDisplayed(Container);
+        StartInstanceActivationListener();
 
         // 如果 IsFirstBootAfterUpdate 从 false 变为 true，说明这次启动只是解压更新包，不用执行后续逻辑
         if (!wasFirstBoot && Instances.VersionUpdateDialogViewModel.IsFirstBootAfterUpdate)
@@ -624,7 +887,7 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
         var maxTimeInterval = Math.Max(buildTimeInterval, resourceTimeInterval);
         if (maxTimeInterval > 90)
         {
-            Instances.TaskQueueViewModel.LogItemViewModels.Add(new(string.Format(LocalizationHelper.GetString("Achievement.Martian.ConditionsTip"), (maxTimeInterval / 30.436875).ToString("F2")), UiLogColor.Error));
+            Instances.TaskQueueViewModel.LogItemViewModels.Add(new(LocalizationHelper.GetStringFormat("Achievement.Martian.ConditionsTip", (maxTimeInterval / 30.436875).ToString("F2")), UiLogColor.Error));
         }
     }
 
@@ -706,6 +969,13 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
 
     public static void Release()
     {
+        _instanceActivationListenerCancellation?.Cancel();
+        _instanceActivationListenerCancellation?.Dispose();
+        _instanceActivationListenerCancellation = null;
+
+        _instanceActivationEvent?.Dispose();
+        _instanceActivationEvent = null;
+
         ETagCache.Save();
         Instances.SettingsViewModel.Sober();
         Instances.MaaHotKeyManager.Release();
@@ -737,8 +1007,7 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
         _logger.Information("Pending update package applied, restarting application");
         if (Environment.ProcessPath is not null)
         {
-            Process.Start(new ProcessStartInfo
-            {
+            Process.Start(new ProcessStartInfo {
                 FileName = Environment.ProcessPath,
                 WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory,
                 UseShellExecute = true,
@@ -746,6 +1015,22 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
         }
 
         Environment.Exit(0);
+    }
+
+    private static void ShowPendingUpdateRecoveryDialog()
+    {
+        MessageBoxHelper.Show(
+            LocalizationHelper.GetString("UpdateApplyFailed"),
+            LocalizationHelper.GetString("Error"),
+            icon: MessageBoxImage.Error);
+    }
+
+    private static void ShowPendingUpdateMissingUpdaterDialog()
+    {
+        MessageBoxHelper.Show(
+        LocalizationHelper.GetString("UpdateApplyMissingUpdater"),
+        LocalizationHelper.GetString("Error"),
+        icon: MessageBoxImage.Error);
     }
 
     /// <summary>
@@ -795,8 +1080,7 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
             return;
         }
 
-        ShutdownAndRestartWith(new ProcessStartInfo
-        {
+        ShutdownAndRestartWith(new ProcessStartInfo {
             FileName = Environment.ProcessPath,
             UseShellExecute = true,
             Verb = "runas",
@@ -837,11 +1121,24 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
     private static void ShowErrorDialog(Exception exception)
     {
         Application.Current.Dispatcher.Invoke(() => {
-            // DragDrop.DoDragSourceMove 会导致崩溃，但不需要退出程序
+            // 这些异常虽然会导致崩溃，但不需要退出程序
             // 这是一坨屎，但是没办法，只能这样了
-            var isDragDropException = exception is COMException && exception.ToString()!.Contains("DragDrop.DoDragSourceMove");
+            var comEx = exception as COMException;
 
-            var shouldExit = !isDragDropException;
+            var details = exception.ToString();
+
+            // DragDrop.DoDragSourceMove 会在拖拽时偶发崩溃
+            var isDragDropException = comEx != null && details.Contains("DragDrop.DoDragSourceMove");
+
+            // DWM 桌面组合被禁用（0x80263001），通常是瞬时的显卡驱动问题，DWM 会自行恢复
+            // 同时用 HResult 与异常文本双重判断，避免不同 .NET 版本/语言环境下 HRESULT 暴露不一致
+            const int DwmECompositionDisabled = unchecked((int)0x80263001);
+            var isDwmCompositionDisabledException = comEx != null &&
+                (comEx.HResult == DwmECompositionDisabled ||
+                 details.Contains("Desktop composition is disabled") ||
+                 details.Contains("0x80263001"));
+
+            var shouldExit = !isDragDropException && !isDwmCompositionDisabledException;
 
             var errorView = new ErrorDialogView(exception, shouldExit);
             errorView.ShowDialog();

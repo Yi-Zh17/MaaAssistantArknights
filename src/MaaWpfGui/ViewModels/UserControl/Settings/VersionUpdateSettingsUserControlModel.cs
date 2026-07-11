@@ -20,6 +20,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Windows;
 using JetBrains.Annotations;
 using MaaWpfGui.Constants;
 using MaaWpfGui.Extensions;
@@ -44,6 +45,7 @@ public class VersionUpdateSettingsUserControlModel : PropertyChangedBase
     static VersionUpdateSettingsUserControlModel()
     {
         Instance = new();
+        LocalizationHelper.LanguageChanged += Instance.RefreshLocalization;
     }
 
     public static VersionUpdateSettingsUserControlModel Instance { get; }
@@ -69,7 +71,9 @@ public class VersionUpdateSettingsUserControlModel : PropertyChangedBase
     /// <summary>
     /// Gets the core version.
     /// </summary>
-    public static string CoreVersion { get; } = Marshal.PtrToStringAnsi(MaaService.AsstGetVersion()) ?? "0.0.1";
+    private static readonly string _coreVersion = Marshal.PtrToStringAnsi(MaaService.AsstGetVersion()) ?? "0.0.1";
+
+    public static string CoreVersion => FakeUpdateHelper.IsEnabled ? FakeUpdateHelper.CurrentVersion : _coreVersion;
 
     public static string CoreVersionDisplay => string.Join("\u200B", CoreVersion.ToCharArray());
 
@@ -78,7 +82,11 @@ public class VersionUpdateSettingsUserControlModel : PropertyChangedBase
     /// <summary>
     /// Gets the UI version.
     /// </summary>
-    public static string UiVersion { get; } = _uiVersion == "0.0.1" ? "DEBUG_VERSION" : _uiVersion;
+    public static string UiVersion => FakeUpdateHelper.IsEnabled
+        ? FakeUpdateHelper.CurrentVersion
+        : _uiVersion == "0.0.1"
+            ? "DEBUG_VERSION"
+            : _uiVersion;
 
     public static string UiVersionDisplay => string.Join("\u200B", UiVersion.ToCharArray());
 
@@ -221,16 +229,14 @@ public class VersionUpdateSettingsUserControlModel : PropertyChangedBase
     /// <summary>
     /// Gets the list of the version type.
     /// </summary>
-    public List<GenericCombinedData<UpdateVersionType>> AllVersionTypeList { get; } =
-        [
-            new() { Display = LocalizationHelper.GetString("UpdateCheckNightly"), Value = UpdateVersionType.Nightly },
-            new() { Display = LocalizationHelper.GetString("UpdateCheckBeta"), Value = UpdateVersionType.Beta },
-            new() { Display = LocalizationHelper.GetString("UpdateCheckStable"), Value = UpdateVersionType.Stable },
-        ];
+    public LocalizedObservableList<UpdateVersionType> AllVersionTypeList { get; } = new(
+        (UpdateVersionType.Nightly, "UpdateCheckNightly"),
+        (UpdateVersionType.Beta, "UpdateCheckBeta"),
+        (UpdateVersionType.Stable, "UpdateCheckStable"));
 
     public List<GenericCombinedData<UpdateVersionType>> VersionTypeList
     {
-        get => AllVersionTypeList.Where(v => AllowNightlyUpdates || v.Value != UpdateVersionType.Nightly).ToList();
+        get => [.. AllVersionTypeList.Items.Where(v => AllowNightlyUpdates || v.Value != UpdateVersionType.Nightly)];
     }
 
     public bool AllowNightlyUpdates { get; set; } = ConfigurationHelper.GetGlobalValue(ConfigurationKeys.AllowNightlyUpdates, false);
@@ -246,10 +252,9 @@ public class VersionUpdateSettingsUserControlModel : PropertyChangedBase
         }
     }
 
-    public List<GenericCombinedData<string>> UpdateSourceList { get; } = [
-        new() { Display = LocalizationHelper.GetString("GlobalSource"), Value = "Github" },
-        new() { Display = LocalizationHelper.GetString("MirrorChyan"), Value = "MirrorChyan" },
-    ];
+    public LocalizedObservableList<string> UpdateSourceList { get; } = new(
+        ("Github", "GlobalSource"),
+        ("MirrorChyan", "MirrorChyan"));
 
     private string _updateSource = ConfigurationHelper.GetGlobalValue(ConfigurationKeys.UpdateSource, "Github");
 
@@ -352,7 +357,7 @@ public class VersionUpdateSettingsUserControlModel : PropertyChangedBase
         MirrorChyanCdkExpiredTime != 0
         ? IsMirrorChyanCdkExpired
             ? LocalizationHelper.GetString("MirrorChyanCdkExpired")
-            : string.Format(LocalizationHelper.GetString("MirrorChyanCdkRemainingDays"),
+            : LocalizationHelper.GetStringFormat("MirrorChyanCdkRemainingDays",
                             MirrorChyanCdkRemaining.TotalDays.ToString("F1"))
         : string.Empty;
 
@@ -386,14 +391,14 @@ public class VersionUpdateSettingsUserControlModel : PropertyChangedBase
         OnPropertyChanged(nameof(MirrorChyanCdkExpiredLocalTime));
     }
 
-    private bool _startupUpdateCheck = Convert.ToBoolean(ConfigurationHelper.GetGlobalValue(ConfigurationKeys.StartupUpdateCheck, bool.TrueString));
+    private bool _startupUpdateCheck = ConfigurationHelper.GetGlobalValue(ConfigurationKeys.StartupUpdateCheck, true);
 
     // UI 绑定的方法
     [UsedImplicitly]
     public void MirrorChyanCdkCopy()
     {
-        System.Windows.Forms.Clipboard.Clear();
-        System.Windows.Forms.Clipboard.SetDataObject(MirrorChyanCdk);
+        Clipboard.Clear();
+        Clipboard.SetDataObject(MirrorChyanCdk);
     }
 
     /// <summary>
@@ -408,7 +413,7 @@ public class VersionUpdateSettingsUserControlModel : PropertyChangedBase
         }
     }
 
-    private bool _updateAutoCheck = Convert.ToBoolean(ConfigurationHelper.GetGlobalValue(ConfigurationKeys.UpdateAutoCheck, bool.FalseString));
+    private bool _updateAutoCheck = ConfigurationHelper.GetGlobalValue(ConfigurationKeys.UpdateAutoCheck, false);
 
     /// <summary>
     /// Gets or sets a value indicating whether to check update.
@@ -466,7 +471,7 @@ public class VersionUpdateSettingsUserControlModel : PropertyChangedBase
         }
     }
 
-    private bool _autoDownloadUpdatePackage = Convert.ToBoolean(ConfigurationHelper.GetGlobalValue(ConfigurationKeys.AutoDownloadUpdatePackage, bool.TrueString));
+    private bool _autoDownloadUpdatePackage = ConfigurationHelper.GetGlobalValue(ConfigurationKeys.AutoDownloadUpdatePackage, true);
 
     /// <summary>
     /// Gets or sets a value indicating whether to auto download update package.
@@ -480,7 +485,7 @@ public class VersionUpdateSettingsUserControlModel : PropertyChangedBase
         }
     }
 
-    private bool _autoInstallUpdatePackage = Convert.ToBoolean(ConfigurationHelper.GetGlobalValue(ConfigurationKeys.AutoInstallUpdatePackage, bool.FalseString));
+    private bool _autoInstallUpdatePackage = ConfigurationHelper.GetGlobalValue(ConfigurationKeys.AutoInstallUpdatePackage, false);
 
     /// <summary>
     /// Gets or sets a value indicating whether to auto install update package.
@@ -491,6 +496,50 @@ public class VersionUpdateSettingsUserControlModel : PropertyChangedBase
         set {
             SetAndNotify(ref _autoInstallUpdatePackage, value);
             ConfigurationHelper.SetGlobalValue(ConfigurationKeys.AutoInstallUpdatePackage, value.ToString());
+        }
+    }
+
+    private bool _showUpdaterConsole = ConfigurationHelper.GetGlobalValue(ConfigurationKeys.ShowUpdaterConsole, false);
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to show the updater console window.
+    /// </summary>
+    public bool ShowUpdaterConsole
+    {
+        get => _showUpdaterConsole;
+        set {
+            SetAndNotify(ref _showUpdaterConsole, value);
+            ConfigurationHelper.SetGlobalValue(ConfigurationKeys.ShowUpdaterConsole, value.ToString());
+        }
+    }
+
+    private bool _showUpdaterProgress = ConfigurationHelper.GetGlobalValue(ConfigurationKeys.ShowUpdaterProgress, true);
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to show the updater progress window.
+    /// </summary>
+    public bool ShowUpdaterProgress
+    {
+        get => _showUpdaterProgress;
+        set {
+            // 关闭进度窗口属于有风险的操作，需要二次确认
+            if (!value)
+            {
+                var result = MessageBoxHelper.Show(
+                    LocalizationHelper.GetString("ShowUpdaterProgressWarning"),
+                    LocalizationHelper.GetString("Warning"),
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning,
+                    yes: LocalizationHelper.GetString("Confirm"),
+                    no: LocalizationHelper.GetString("Cancel"));
+                if (result != MessageBoxResult.Yes)
+                {
+                    return;
+                }
+            }
+
+            SetAndNotify(ref _showUpdaterProgress, value);
+            ConfigurationHelper.SetGlobalValue(ConfigurationKeys.ShowUpdaterProgress, value.ToString());
         }
     }
 
@@ -615,5 +664,14 @@ public class VersionUpdateSettingsUserControlModel : PropertyChangedBase
         {
             Instances.WindowManager.ShowWindow(Instances.VersionUpdateDialogViewModel);
         }
+    }
+
+    /// <summary>
+    /// 刷新构造时缓存的本地化列表文本。
+    /// </summary>
+    private void RefreshLocalization()
+    {
+        AllVersionTypeList.RefreshLocalization();
+        UpdateSourceList.RefreshLocalization();
     }
 }

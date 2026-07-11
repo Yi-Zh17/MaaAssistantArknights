@@ -20,39 +20,37 @@
     mc:Ignorable="d">
     <StackPanel>
         <StackPanel Visibility="{c:Binding !UseAttachWindow, Source={x:Static settings_vms:ConnectSettingsUserControlModel.Instance}}">
-            <Grid Margin="0,5" Visibility="{c:Binding 'ClientType == &quot;Official&quot; or ClientType == &quot;Bilibili&quot;', Source={x:Static settings_vms:GameSettingsUserControlModel.Instance}}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+            <StackPanel Visibility="{c:Binding 'ClientType == &quot;Official&quot; or ClientType == &quot;Bilibili&quot; or ClientType == &quot;txwy&quot;', Source={x:Static settings_vms:GameSettingsUserControlModel.Instance}}">
                 <StackPanel
+                    Margin="0,5"
                     HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
                     Orientation="Horizontal">
-                    <TextBlock
-                        Margin="8,0,0,0"
-                        Text="{DynamicResource AccountSwitch}"
-                        Visibility="Hidden" />
-                    <controls:TooltipBlock Margin="0,0,5,0" TooltipText="{DynamicResource AccountSwitchTip}" />
+                    <CheckBox Content="{DynamicResource AccountSwitch}" IsChecked="{Binding AccountSwitchEnabled}" />
+                    <controls:TooltipBlock TooltipText="{DynamicResource AccountSwitchTip}" />
                 </StackPanel>
-                <hc:TextBox
-                    Grid.Column="0"
-                    hc:BorderElement.CornerRadius="4,0,0,4"
-                    hc:TitleElement.Title="{DynamicResource AccountSwitch}"
-                    IsReadOnly="{c:Binding !Idle,
-                                           Source={x:Static helper:Instances.SettingsViewModel}}"
-                    Text="{Binding AccountName, UpdateSourceTrigger=PropertyChanged}" />
-                <Button
-                    Grid.Column="1"
-                    Padding="12,1,12,1"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Bottom"
-                    hc:BorderElement.CornerRadius="0,4,4,0"
-                    BorderThickness="0,1,1,1"
-                    Command="{s:Action AccountSwitchManualRun}"
-                    Content="{DynamicResource AccountSwitchManualRun}"
-                    IsEnabled="{c:Binding 'AccountName != &quot;&quot;'}" />
-            </Grid>
+                <Grid Margin="0,5" Visibility="{c:Binding AccountSwitchEnabled}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox
+                        Grid.Column="0"
+                        hc:BorderElement.CornerRadius="4,0,0,4"
+                        IsReadOnly="{c:Binding !Idle,
+                                               Source={x:Static helper:Instances.SettingsViewModel}}"
+                        Text="{Binding AccountName, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button
+                        Grid.Column="1"
+                        Padding="12,1,12,1"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Bottom"
+                        hc:BorderElement.CornerRadius="0,4,4,0"
+                        BorderThickness="0,1,1,1"
+                        Command="{s:Action AccountSwitchManualRun}"
+                        Content="{DynamicResource AccountSwitchManualRun}"
+                        IsEnabled="{c:Binding 'AccountName != &quot;&quot;'}" />
+                </Grid>
+            </StackPanel>
 
             <controls:TextBlock
                 Margin="0,5"
@@ -213,6 +211,90 @@
                     ItemsSource="{Binding AttachWindowKeyboardMethodList}"
                     SelectedValue="{Binding AttachWindowKeyboardMethod}"
                     SelectedValuePath="Value" />
+            </StackPanel>
+
+            <!--  截图增强（MuMu12）  -->
+            <StackPanel Visibility="{c:Binding 'ConnectConfig==&quot;MuMuEmulator12&quot; and !UseAttachWindow'}">
+                <StackPanel
+                    Margin="0,5"
+                    HorizontalAlignment="Left"
+                    Orientation="Horizontal">
+                    <CheckBox Content="{DynamicResource MuMu12ExtrasEnabled}" IsChecked="{Binding MuMuEmulatorExtras.Enable}" />
+                    <controls:TooltipBlock TooltipText="{DynamicResource MuMu12ExtrasEnabledTip}" />
+                </StackPanel>
+                <StackPanel
+                    HorizontalAlignment="Left"
+                    Orientation="Vertical"
+                    Visibility="{c:Binding MuMuEmulatorExtras.Enable}">
+                    <hc:TextBox
+                        Margin="0,5"
+                        hc:InfoElement.Placeholder="Example: C:\Program Files\Netease\MuMuPlayer"
+                        hc:TitleElement.Title="{DynamicResource MuMu12EmulatorPath}"
+                        hc:TitleElement.TitlePlacement="Top"
+                        Text="{Binding MuMuEmulatorExtras.EmulatorPath}" />
+                    <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                        <CheckBox
+                            Margin="0,5"
+                            Content="{DynamicResource MuMuBridgeConnection}"
+                            IsChecked="{Binding MuMuEmulatorExtras.MuMuBridgeConnection}" />
+                        <controls:TooltipBlock TooltipText="{DynamicResource MuMuBridgeConnectionTip}" />
+                    </StackPanel>
+                    <hc:TextBox
+                        Margin="0,5"
+                        HorizontalContentAlignment="Center"
+                        hc:TitleElement.Title="{DynamicResource MuMu12Index}"
+                        hc:TitleElement.TitlePlacement="Top"
+                        Text="{Binding MuMuEmulatorExtras.Index}"
+                        Visibility="{c:Binding MuMuEmulatorExtras.MuMuBridgeConnection}" />
+                </StackPanel>
+            </StackPanel>
+
+            <!--  截图增强（LDPlayer）  -->
+            <StackPanel Visibility="{c:Binding 'ConnectConfig==&quot;LDPlayer&quot; and !UseAttachWindow'}">
+                <StackPanel
+                    Margin="0,5"
+                    HorizontalAlignment="Left"
+                    Orientation="Horizontal">
+                    <CheckBox Content="{DynamicResource LdExtrasEnabled}" IsChecked="{Binding LdPlayerExtras.Enable}" />
+                    <controls:TooltipBlock TooltipText="{DynamicResource LdExtrasEnabledTip}" />
+                </StackPanel>
+                <StackPanel Visibility="{c:Binding LdPlayerExtras.Enable}">
+                    <hc:TextBox
+                        Margin="0,5"
+                        hc:InfoElement.Placeholder="Example: C:\leidian\LDPlayer9"
+                        hc:TitleElement.Title="{DynamicResource LdEmulatorPath}"
+                        hc:TitleElement.TitlePlacement="Left"
+                        Text="{Binding LdPlayerExtras.EmulatorPath}" />
+                    <CheckBox
+                        HorizontalAlignment="Left"
+                        VerticalContentAlignment="Center"
+                        Content="{DynamicResource LdManualSetIndex}"
+                        IsChecked="{Binding LdPlayerExtras.ManualSetIndex}" />
+                    <hc:TextBox
+                        Width="130"
+                        Margin="0,5"
+                        hc:InfoElement.Placeholder="0"
+                        hc:TitleElement.Title="{DynamicResource LdIndex}"
+                        hc:TitleElement.TitlePlacement="Left"
+                        Text="{Binding LdPlayerExtras.Index}"
+                        Visibility="{c:Binding LdPlayerExtras.ManualSetIndex}" />
+                </StackPanel>
+            </StackPanel>
+
+            <!--  截图测试  -->
+            <StackPanel Visibility="{c:Binding '!UseAttachWindow'}">
+                <Button
+                    Height="30"
+                    Margin="0,5"
+                    HorizontalAlignment="Left"
+                    Command="{s:Action TestLinkAndGetImage}"
+                    Content="{DynamicResource ScreenshotTest}" />
+                <controls:TextBlock
+                    Margin="0,5"
+                    HorizontalAlignment="Left"
+                    Text="{Binding TestLinkInfo}"
+                    TextWrapping="Wrap"
+                    Visibility="{c:Binding 'TestLinkInfo!=&quot;&quot;'}" />
             </StackPanel>
         </StackPanel>
     </StackPanel>

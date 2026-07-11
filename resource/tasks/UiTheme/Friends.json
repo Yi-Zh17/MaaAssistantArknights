@@ -20,7 +20,9 @@
             "FriendsJieGarden",
             "FriendsAveMujica",
             "FriendsTogether",
-            "FriendsLoneTrail"
+            "FriendsLoneTrail",
+            "FriendsReconstruct",
+            "FriendsHunting"
         ],
         "onErrorNext": ["Friends-Entry@SwitchTheme@ToggleSettingsMenu"]
     },
@@ -84,5 +86,13 @@
     "FriendsLoneTrail": {
         "baseTask": "FriendsDefault",
         "template": ["LoneTrail/Day/Friends.png", "LoneTrail/Night/Friends.png"]
+    },
+    "FriendsReconstruct": {
+        "baseTask": "FriendsDefault",
+        "template": "Reconstruct/Friends.png"
+    },
+    "FriendsHunting": {
+        "baseTask": "FriendsDefault",
+        "template": "Hunting/Friends.png"
     }
 }

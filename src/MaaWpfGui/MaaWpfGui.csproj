@@ -72,7 +72,7 @@
   <PropertyGroup>
     <Authors>MAA Team</Authors>
     <PackageLicenseUrl>https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev-v2/LICENSE</PackageLicenseUrl>
-    <Copyright>Copyright (c) 2021-2025 MAA Team</Copyright>
+    <Copyright>Copyright (c) 2021-2026 MAA Team</Copyright>
     <Description>https://docs.maa.plus/</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
@@ -95,6 +95,7 @@
     <Resource Include="Res\Img\*" />
     <Resource Include="Res\Img\EasterEgg\*" />
     <Resource Include="Res\Img\Operator\*" />
+    <Content Include="Res\Video\*" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\README.md" Pack="True" PackagePath="/" />
   </ItemGroup>
 
@@ -120,7 +121,7 @@
     <PackageReference Include="gong-wpf-dragdrop" Version="4.0.0" />
     <PackageReference Include="HandyControls" Version="3.6.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
-    <PackageReference Include="MailKit" Version="4.15.1" />
+    <PackageReference Include="MailKit" Version="4.16.0" />
     <PackageReference Include="MdXaml" Version="1.27.0" />
     <PackageReference Include="MdXaml.Html" Version="1.27.0" />
     <PackageReference Include="MdXaml.Plugins" Version="1.27.0" />
@@ -147,5 +148,4 @@
     <PackageReference Include="System.Management" Version="10.0.0" />
     <PackageReference Include="WindowsAPICodePack" Version="8.0.12" />
   </ItemGroup>
-
 </Project>

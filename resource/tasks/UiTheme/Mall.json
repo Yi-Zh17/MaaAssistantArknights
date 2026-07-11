@@ -20,7 +20,9 @@
             "MallJieGarden",
             "MallAveMujica",
             "MallTogether",
-            "MallLoneTrail"
+            "MallLoneTrail",
+            "MallReconstruct",
+            "MallHunting"
         ],
         "onErrorNext": ["Mall-Entry@SwitchTheme@ToggleSettingsMenu"]
     },
@@ -83,5 +85,13 @@
     "MallLoneTrail": {
         "baseTask": "MallDefault",
         "template": ["LoneTrail/Day/Mall.png", "LoneTrail/Night/Mall.png"]
+    },
+    "MallReconstruct": {
+        "baseTask": "MallDefault",
+        "template": "Reconstruct/Mall.png"
+    },
+    "MallHunting": {
+        "baseTask": "MallDefault",
+        "template": "Hunting/Mall.png"
     }
 }

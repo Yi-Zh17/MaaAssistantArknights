@@ -68,7 +68,9 @@ public partial class CopilotViewModel : Screen
     /// 缓存的已解析作业，非即时添加的作业会使用该缓存
     /// </summary>
     private CopilotBase? _copilotCache;
-    private const string CopilotIdPrefix = "maa://";
+    private const string CopilotIdPrefix = "maa://"; // TODO: 作业站迁移完成后删除 maa:// 旧格式支持
+    private const string CopilotNewIdPrefix = "prts://"; // 新格式前缀，prts://12345 为作业，prts://s12345 为作业集
+    private const string CopilotNewSetIdPrefix = "prts://s"; // 新格式作业集前缀
     private static readonly string TempCopilotFile = Path.Combine(CacheDir, "_temp_copilot.json");
 
     // VideoRecognition 已不支持：仅保留 json 作业
@@ -116,9 +118,17 @@ public partial class CopilotViewModel : Screen
         AddLog(LocalizationHelper.GetString("CopilotTip"), showTime: false);
         _runningState = RunningState.Instance;
         _runningState.StateChanged += (_, e) => {
-            Idle = e.Idle;
-            Inited = e.Inited;
-            Stopping = e.Stopping;
+            Idle = e.NewState.Idle;
+            Inited = e.NewState.Inited;
+            Stopping = e.NewState.Stopping;
+        };
+        LocalizationHelper.LanguageChanged += () => {
+            DisplayName = LocalizationHelper.GetString("Copilot");
+            ClearLog();
+        };
+        UserAdditionalItems.CollectionChanged += (_, _) => {
+            NotifyOfPropertyChange(nameof(UserAdditionalGridHeight));
+            NotifyOfPropertyChange(nameof(UserAdditionalPopupVerticalOffset));
         };
 
         var copilotTaskList = ConfigurationHelper.GetValue(ConfigurationKeys.CopilotTaskList, string.Empty);
@@ -273,8 +283,13 @@ public partial class CopilotViewModel : Screen
             var copilotRoot = Path.Combine(ResourceDir, "copilot");
             var fullPath = Path.IsPathRooted(value) ? value : Path.Combine(copilotRoot, value);
 
+            /* 神秘代码（作业站 ID），交给 FileName 处理 */
+            if (IsCopilotCode(value))
+            {
+                Filename = value;
+            }
             /* 相对/绝对路径 */
-            if (File.Exists(fullPath))
+            else if (File.Exists(fullPath))
             {
                 Filename = fullPath;
             }
@@ -283,7 +298,7 @@ public partial class CopilotViewModel : Screen
             {
                 Filename = mappedPath;
             }
-            /* maybe 是神秘代码，交给 FileName 处理 */
+            /* maybe 是其他神秘代码，交给 FileName 处理 */
             else
             {
                 Filename = value;
@@ -309,7 +324,8 @@ public partial class CopilotViewModel : Screen
 
     private string ProcessFilePath(string value)
     {
-        if (string.IsNullOrWhiteSpace(value) || File.Exists(value))
+        // 神秘代码不按文件路径处理，原样透传
+        if (string.IsNullOrWhiteSpace(value) || IsCopilotCode(value) || File.Exists(value))
         {
             return value;
         }
@@ -345,6 +361,95 @@ public partial class CopilotViewModel : Screen
         CopilotUrl = string.IsNullOrWhiteSpace(filename) ? CopilotUiUrl : CopilotUrl;
     }
 
+    /// <summary>
+    /// 判断输入是否为作业站神秘代码（maa://、prts://、prts://s 前缀、s12345 或纯数字）
+    /// </summary>
+    private static bool IsCopilotCode(string value)
+    {
+        return TryParseCopilotCode(value, out _, out _);
+    }
+
+    // TODO: 作业站迁移完成后删除此方法（旧格式 maa:// 和纯数字无法区分类型，届时所有格式都自带类型信息）
+
+    /// <summary>
+    /// 判断是否为类型不明确的旧格式代码（maa:// 或纯数字，无法区分作业/作业集）
+    /// </summary>
+    private static bool IsAmbiguousCopilotCode(string value)
+    {
+        return value.StartsWith(CopilotIdPrefix, StringComparison.OrdinalIgnoreCase)
+            || int.TryParse(value, out _);
+    }
+
+    /// <summary>
+    /// 作业站代码类型
+    /// </summary>
+    private enum CopilotCodeType
+    {
+        /// <summary>不是作业站代码</summary>
+        None,
+
+        /// <summary>单个作业</summary>
+        Copilot,
+
+        /// <summary>作业集</summary>
+        CopilotSet,
+    }
+
+    /// <summary>
+    /// 解析作业站代码，识别所有已知格式并提取数字 ID
+    /// </summary>
+    /// <param name="input">原始输入（maa://12345、prts://12345、prts://s12345、s12345、12345）</param>
+    /// <param name="type">解析出的类型；maa:// 和纯数字默认为 Copilot（按钮上下文可覆盖）</param>
+    /// <param name="id">提取的数字 ID</param>
+    /// <returns>是否成功解析</returns>
+    private static bool TryParseCopilotCode(string input, out CopilotCodeType type, out int id)
+    {
+        type = CopilotCodeType.None;
+        id = 0;
+
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return false;
+        }
+
+        // 带前缀的格式（从长到短匹配，避免 prts://s 被 prts:// 抢先）
+        if (input.StartsWith(CopilotNewSetIdPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            type = CopilotCodeType.CopilotSet;
+            return int.TryParse(input[CopilotNewSetIdPrefix.Length..], out id);
+        }
+
+        if (input.StartsWith(CopilotNewIdPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            type = CopilotCodeType.Copilot;
+            return int.TryParse(input[CopilotNewIdPrefix.Length..], out id);
+        }
+
+        // TODO: 作业站迁移完成后删除 maa:// 旧格式分支
+        if (input.StartsWith(CopilotIdPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            // maa:// 旧格式，默认当单个作业（按钮上下文可覆盖为作业集）
+            type = CopilotCodeType.Copilot;
+            return int.TryParse(input[CopilotIdPrefix.Length..], out id);
+        }
+
+        // s12345 格式作业集
+        if (input.Length > 1 && (input[0] is 's' or 'S') && int.TryParse(input[1..], out id))
+        {
+            type = CopilotCodeType.CopilotSet;
+            return true;
+        }
+
+        // 纯数字，默认当单个作业
+        if (int.TryParse(input, out id))
+        {
+            type = CopilotCodeType.Copilot;
+            return true;
+        }
+
+        return false;
+    }
+
     private bool _form;
 
     /// <summary>
@@ -378,6 +483,8 @@ public partial class CopilotViewModel : Screen
     /// Gets or sets a value indicating whether 真正有干员被忽略了要求
     /// </summary>
     public bool HasRequirementIgnored { get; set; } = false;
+
+    public int CurrentCopilotId { get; set; } = -1;
 
     public bool UseSanityPotion { get => field; set => SetAndNotify(ref field, value); }
 
@@ -437,6 +544,22 @@ public partial class CopilotViewModel : Screen
     /// Gets the view models of UserAdditional items.
     /// </summary>
     public ObservableCollection<UserAdditionalItemViewModel> UserAdditionalItems { get; } = [];
+
+    private const int MaxVisibleUserAdditionalRows = 7;
+
+    public double UserAdditionalRowHeight => 40;
+
+    public double UserAdditionalGridMaxHeight => 350;
+
+    public double UserAdditionalGridHeight
+    {
+        get {
+            var rows = Math.Clamp(UserAdditionalItems.Count, 1, MaxVisibleUserAdditionalRows);
+            return UserAdditionalGridMaxHeight - ((MaxVisibleUserAdditionalRows - rows) * UserAdditionalRowHeight);
+        }
+    }
+
+    public double UserAdditionalPopupVerticalOffset => (UserAdditionalGridHeight - UserAdditionalGridMaxHeight) / 2;
 
     /// <summary>
     /// Opens the UserAdditional popup for editing.
@@ -746,14 +869,6 @@ public partial class CopilotViewModel : Screen
         }
     }
 
-    private string _urlText = LocalizationHelper.GetString("PrtsPlus");
-
-    /// <summary>
-    /// Gets or private sets the UrlText.
-    /// </summary>
-    [PropertyDependsOn(nameof(CopilotUrl))]
-    public string UrlText => CopilotUrl == CopilotUiUrl ? LocalizationHelper.GetString("PrtsPlus") : LocalizationHelper.GetString("VideoLink");
-
     private const string CopilotUiUrl = MaaUrls.PrtsPlus;
 
     private string _copilotUrl = CopilotUiUrl;
@@ -768,6 +883,23 @@ public partial class CopilotViewModel : Screen
             SetAndNotify(ref _copilotUrl, value);
         }
     }
+
+    private string _videoUrl = string.Empty;
+
+    /// <summary>
+    /// Gets or private sets the video URL.
+    /// </summary>
+    public string VideoUrl
+    {
+        get => _videoUrl;
+        private set => SetAndNotify(ref _videoUrl, value);
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether there is a video URL.
+    /// </summary>
+    [PropertyDependsOn(nameof(VideoUrl))]
+    public bool HasVideoUrl => !string.IsNullOrEmpty(VideoUrl);
 
     private const string MapUiUrl = MaaUrls.MapPrts;
 
@@ -825,6 +957,9 @@ public partial class CopilotViewModel : Screen
         }
     }
 
+    // TODO: 作业站迁移完成后删除此方法及对应的 XAML 按钮（CopilotView.xaml Grid.Column=3）、
+    //  TooltipBlock（Grid.Column=3）、本地化字符串 PasteClipboardCopilotSetTip
+
     /// <summary>
     /// Paste clipboard contents.
     /// UI 绑定的方法
@@ -833,14 +968,25 @@ public partial class CopilotViewModel : Screen
     [UsedImplicitly]
     public async Task PasteClipboardCopilotSet()
     {
-        StartEnabled = false;
-        ClearLog();
-        if (Clipboard.ContainsText())
+        if (!Clipboard.ContainsText())
         {
-            await GetCopilotSetAsync(Clipboard.GetText().Trim());
-            CopilotUrl = CopilotUiUrl;
+            return;
         }
 
+        var text = Clipboard.GetText().Trim();
+
+        // 新格式自带类型信息，交给 Filename → UpdateFileDoc 自动路由
+        // 旧格式（maa:// / 纯数字）类型不明确，按按钮上下文当作业集处理
+        if (!IsAmbiguousCopilotCode(text))
+        {
+            Filename = text;
+            return;
+        }
+
+        StartEnabled = false;
+        ClearLog();
+        await GetCopilotSetAsync(text);
+        CopilotUrl = CopilotUiUrl;
         StartEnabled = true;
     }
 
@@ -1000,6 +1146,7 @@ public partial class CopilotViewModel : Screen
     {
         ClearLog();
         CopilotUrl = CopilotUiUrl;
+        VideoUrl = string.Empty;
         MapUrl = MapUiUrl;
         IsDataFromWeb = false;
         CopilotId = 0;
@@ -1035,8 +1182,15 @@ public partial class CopilotViewModel : Screen
                 return;
             }
         }
-        else if (filename.StartsWith(CopilotIdPrefix, StringComparison.OrdinalIgnoreCase) || int.TryParse(filename, out _))
+        else if (TryParseCopilotCode(filename, out var codeType, out var copilotSetId))
         {
+            if (codeType == CopilotCodeType.CopilotSet)
+            {
+                await GetCopilotSetAsync(copilotSetId);
+                return;
+            }
+
+            // 单个作业
             (copilotId, payload) = await GetCopilotAsync(filename);
             if (payload is not null)
             {
@@ -1092,18 +1246,13 @@ public partial class CopilotViewModel : Screen
 
     private async Task<(int CopilotId, CopilotBase? Payload)> GetCopilotAsync(string copilotCodeString)
     {
-        if (copilotCodeString.StartsWith(CopilotIdPrefix, StringComparison.OrdinalIgnoreCase))
+        if (!TryParseCopilotCode(copilotCodeString, out _, out var copilotCode))
         {
-            copilotCodeString = copilotCodeString[CopilotIdPrefix.Length..];
+            AddLog(LocalizationHelper.GetString("CopilotNoFound") + $":{copilotCodeString}", UiLogColor.Error, showTime: false);
+            return (0, null);
         }
 
-        if (int.TryParse(copilotCodeString, out var copilotCode))
-        {
-            return await GetCopilotAsync(copilotCode);
-        }
-
-        AddLog(LocalizationHelper.GetString("CopilotNoFound") + $":{copilotCodeString}", UiLogColor.Error, showTime: false);
-        return (0, null);
+        return await GetCopilotAsync(copilotCode);
     }
 
     private async Task<(int CopilotId, CopilotBase? Payload)> GetCopilotAsync(int copilotId)
@@ -1142,14 +1291,14 @@ public partial class CopilotViewModel : Screen
 
         _taskType = AsstTaskType.Copilot;
         _copilotCache = copilot;
+        VideoUrl = string.Empty;
         if (copilot.Documentation?.Details is not null)
         {
-            CopilotUrl = CopilotUiUrl;
-            var linkParser = new Regex(@"(?:av\d+|bv[a-z0-9]{10})(?:\/\?p=\d+)?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            var linkParser = BVRegex();
             var match = linkParser.Match(copilot.Documentation.Details);
             if (match.Success)
             {
-                CopilotUrl = MaaUrls.BilibiliVideo + match.Value; // 视频链接
+                VideoUrl = MaaUrls.BilibiliVideo + match.Value; // 视频链接
             }
         }
 
@@ -1248,14 +1397,14 @@ public partial class CopilotViewModel : Screen
         CopilotTabIndex = 1;
         _copilotCache = copilot;
         MapUrl = MapUiUrl.Replace("areas", "map/" + copilot.StageName);
+        VideoUrl = string.Empty;
         if (copilot.Documentation?.Details is not null)
         {
-            CopilotUrl = CopilotUiUrl;
             var linkParser = new Regex(@"(?:av\d+|bv[a-z0-9]{10})(?:\/\?p=\d+)?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
             var match = linkParser.Match(copilot.Documentation.Details);
             if (match.Success)
             {
-                CopilotUrl = MaaUrls.BilibiliVideo + match.Value; // 视频链接
+                VideoUrl = MaaUrls.BilibiliVideo + match.Value; // 视频链接
             }
         }
 
@@ -1296,18 +1445,13 @@ public partial class CopilotViewModel : Screen
 
     private async Task GetCopilotSetAsync(string copilotCodeString)
     {
-        if (copilotCodeString.StartsWith(CopilotIdPrefix, StringComparison.OrdinalIgnoreCase))
+        if (!TryParseCopilotCode(copilotCodeString, out _, out var copilotCode))
         {
-            copilotCodeString = copilotCodeString[CopilotIdPrefix.Length..];
-        }
-
-        if (int.TryParse(copilotCodeString, out var copilotCode))
-        {
-            await GetCopilotSetAsync(copilotCode);
+            AddLog(LocalizationHelper.GetString("CopilotNoFound") + $"  {copilotCodeString}", UiLogColor.Error, showTime: false);
             return;
         }
 
-        AddLog(LocalizationHelper.GetString("CopilotNoFound") + $"  {copilotCodeString}", UiLogColor.Error, showTime: false);
+        await GetCopilotSetAsync(copilotCode);
     }
 
     private async Task GetCopilotSetAsync(int copilotCode)
@@ -1631,7 +1775,7 @@ public partial class CopilotViewModel : Screen
         var stageId = mapInfo?.StageId;
         if (mapInfo is null)
         {
-            AddLog(string.Format(LocalizationHelper.GetString("CopilotStageNameNotFound"), stageCode), UiLogColor.Error, showTime: false);
+            AddLog(LocalizationHelper.GetStringFormat("CopilotStageNameNotFound", stageCode), UiLogColor.Error, showTime: false);
             return false;
         }
 
@@ -1779,7 +1923,7 @@ public partial class CopilotViewModel : Screen
         Execute.OnUIThread(() => {
             foreach (var model in CopilotItemViewModels)
             {
-                if (!model.IsChecked)
+                if (!model.IsChecked || (CurrentCopilotId != -1 && model.Index != CurrentCopilotId))
                 {
                     continue;
                 }
@@ -1845,7 +1989,15 @@ public partial class CopilotViewModel : Screen
 
         if (!await ConnectToEmulatorAsync())
         {
-            Stop();
+            await Stop();
+            return;
+        }
+
+        // 连接期间用户可能已点停止，需在此处拦截
+        if (_runningState.GetStopping())
+        {
+            Instances.TaskQueueViewModel.SetStopped(SettingsViewModel.GameSettings.CopilotWithScript);
+            AddLog(LocalizationHelper.GetString("Stopped"));
             return;
         }
 
@@ -2047,7 +2199,7 @@ public partial class CopilotViewModel : Screen
 
             var t = CopilotItemViewModels.Where(i => i.IsChecked).Select(i => {
                 _copilotIdList.Add(i.CopilotId);
-                return new MultiTask { FileName = i.FilePath, IsRaid = i.IsRaid, StageName = i.Name, };
+                return new MultiTask { Index = i.Index, FileName = i.FilePath, IsRaid = i.IsRaid, StageName = i.Name, };
             });
 
             var task = new AsstCopilotTask() {
@@ -2071,7 +2223,7 @@ public partial class CopilotViewModel : Screen
 
             var t = CopilotItemViewModels.Where(i => i.IsChecked).Select(i => {
                 _copilotIdList.Add(i.CopilotId);
-                return i.FilePath;
+                return new AsstParadoxCopilotTask.MultiTask(i.Index, i.FilePath);
             });
 
             var task = new AsstParadoxCopilotTask() { MultiTasks = [.. t], };
@@ -2132,23 +2284,16 @@ public partial class CopilotViewModel : Screen
     /// Stops copilot.
     /// UI 绑定的方法
     /// </summary>
-    public void Stop()
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public async Task Stop()
     {
-        if (SettingsViewModel.GameSettings.CopilotWithScript && SettingsViewModel.GameSettings.ManualStopWithScript)
+        // 等待 Core 实际停止；回调或超时自动 SetStopped（脚本由 proxy 回调按 CopilotWithScript 设置判断）
+        AddLog(LocalizationHelper.GetString("Stopping"));
+        await Instances.TaskQueueViewModel.Stop();
+        if (_runningState.GetIdle() && !_runningState.GetStopping())
         {
-            Task.Run(() => SettingsViewModel.GameSettings.RunScript("EndsWithScript", showLog: false));
-            if (!string.IsNullOrWhiteSpace(SettingsViewModel.GameSettings.EndsWithScript))
-            {
-                Instances.CopilotViewModel.AddLog(LocalizationHelper.GetString("EndsWithScript"));
-            }
+            AddLog(LocalizationHelper.GetString("Stopped"));
         }
-
-        if (!Instances.AsstProxy.AsstStop())
-        {
-            _logger.Warning("Failed to stop Asst");
-        }
-
-        _runningState.SetIdle(true);
     }
 
     private bool IsDataFromWeb { get => field; set => SetAndNotify(ref field, value); }
@@ -2252,7 +2397,7 @@ public partial class CopilotViewModel : Screen
         {
             if (!DataHelper.Operators.Any(op => op.Value.Name == DataHelper.GetLocalizedCharacterName(task.Name, "zh-cn")))
             {
-                AddLog(string.Format(LocalizationHelper.GetString("CopilotIllegalOperName"), task.Name), UiLogColor.Error, showTime: false);
+                AddLog(LocalizationHelper.GetStringFormat("CopilotIllegalOperName", task.Name), UiLogColor.Error, showTime: false);
                 _ = Task.Run(ResourceUpdater.ResourceUpdateAndReloadAsync);
                 AchievementTrackerHelper.Instance.Unlock(AchievementIds.MapOutdated);
                 ok = false;
@@ -2400,4 +2545,7 @@ public partial class CopilotViewModel : Screen
         /// <summary>其他</summary>
         Other,
     }
+
+    [GeneratedRegex(@"(?:av\d+|bv[a-z0-9]{10})(?:\/\?p=\d+)?", RegexOptions.IgnoreCase | RegexOptions.Compiled, "zh-CN")]
+    private static partial Regex BVRegex();
 }
